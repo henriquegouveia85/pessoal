@@ -1,5 +1,7 @@
 const PASTA_ID = '1c9ZZsg7TpM_cHbWFxFqeOw2SymYQqfqW';
 const ARQUIVO_PAUSA = 'galeria_pausada.txt';
+const ARQUIVO_MODERACAO = 'moderacao_ativa.txt';
+const PREFIXO_PENDENTE = 'PENDING|';
 
 function doPost(e) {
   try {
@@ -9,6 +11,66 @@ function doPost(e) {
     }
     const data = JSON.parse(e.postData.contents);
     const acao = data.acao || 'upload';
+
+    if (acao === 'verificar_moderacao') {
+      const pasta = DriveApp.getFolderById(PASTA_ID);
+      const arquivos = pasta.getFilesByName(ARQUIVO_MODERACAO);
+      return ContentService.createTextOutput(JSON.stringify({sucesso: true, ativa: arquivos.hasNext()})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (acao === 'definir_moderacao') {
+      const ativar = data.ativar === true || data.ativar === 'true';
+      const pasta = DriveApp.getFolderById(PASTA_ID);
+      try {
+        const arquivos = pasta.getFilesByName(ARQUIVO_MODERACAO);
+        while (arquivos.hasNext()) arquivos.next().setTrashed(true);
+      } catch (err) {}
+      if (ativar) {
+        const blob = Utilities.newBlob('ATIVO', 'text/plain', ARQUIVO_MODERACAO);
+        pasta.createFile(blob);
+      }
+      return ContentService.createTextOutput(JSON.stringify({sucesso: true, ativa: ativar})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (acao === 'listar_pendentes') {
+      const pasta = DriveApp.getFolderById(PASTA_ID);
+      const arquivos = pasta.getFiles();
+      const pendentes = [];
+      while (arquivos.hasNext()) {
+        const arquivo = arquivos.next();
+        if (arquivo.isTrashed()) continue;
+        const desc = arquivo.getDescription() || '';
+        if (desc.startsWith(PREFIXO_PENDENTE) && arquivo.getMimeType().startsWith('image/')) {
+          try { arquivo.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (err) {}
+          pendentes.push({
+            id: arquivo.getId(),
+            nome: arquivo.getName(),
+            data: arquivo.getDateCreated().getTime(),
+            url: 'https://lh3.googleusercontent.com/d/' + arquivo.getId(),
+            descricao: desc.substring(PREFIXO_PENDENTE.length)
+          });
+        }
+      }
+      pendentes.sort((a, b) => b.data - a.data);
+      return ContentService.createTextOutput(JSON.stringify(pendentes)).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (acao === 'aprovar_foto') {
+      const idArquivo = data.id;
+      if (!idArquivo) {
+        return ContentService.createTextOutput(JSON.stringify({sucesso: false, erro: 'ID não fornecido'})).setMimeType(ContentService.MimeType.JSON);
+      }
+      try {
+        const arquivo = DriveApp.getFileById(idArquivo);
+        const desc = arquivo.getDescription() || '';
+        if (desc.startsWith(PREFIXO_PENDENTE)) {
+          arquivo.setDescription(desc.substring(PREFIXO_PENDENTE.length));
+        }
+        return ContentService.createTextOutput(JSON.stringify({sucesso: true})).setMimeType(ContentService.MimeType.JSON);
+      } catch (err) {
+        return ContentService.createTextOutput(JSON.stringify({sucesso: false, erro: err.toString()})).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
 
     if (acao === 'pausar') {
       const pausar = data.pausar;
@@ -164,8 +226,20 @@ function doPost(e) {
     const pasta = DriveApp.getFolderById(PASTA_ID);
     const arquivo = pasta.createFile(blob);
     arquivo.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    if (mensagem) arquivo.setDescription(nomeConvidado + ': ' + mensagem);
-    else arquivo.setDescription(nomeConvidado);
+
+    // Verifica se moderação está ativa
+    let moderacaoAtiva = false;
+    try {
+      const modFiles = pasta.getFilesByName(ARQUIVO_MODERACAO);
+      moderacaoAtiva = modFiles.hasNext();
+    } catch (err) {}
+
+    const descBase = mensagem ? (nomeConvidado + ': ' + mensagem) : nomeConvidado;
+    if (moderacaoAtiva) {
+      arquivo.setDescription(PREFIXO_PENDENTE + descBase);
+    } else {
+      arquivo.setDescription(descBase);
+    }
     Logger.log('SUCESSO: ' + arquivo.getId());
     return ContentService.createTextOutput(JSON.stringify({sucesso: true, id: arquivo.getId()})).setMimeType(ContentService.MimeType.JSON);
   } catch (erro) {
@@ -183,13 +257,16 @@ function doGet(e) {
       const arquivo = arquivos.next();
       if (arquivo.isTrashed()) continue;
       if (arquivo.getMimeType().startsWith('image/')) {
+        const desc = arquivo.getDescription() || '';
+        // Pula fotos pendentes de moderação
+        if (desc.startsWith(PREFIXO_PENDENTE)) continue;
         try { arquivo.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); } catch (err) {}
         fotos.push({
           id: arquivo.getId(),
           nome: arquivo.getName(),
           data: arquivo.getDateCreated().getTime(),
           url: 'https://lh3.googleusercontent.com/d/' + arquivo.getId(),
-          descricao: arquivo.getDescription() || ''
+          descricao: desc
         });
       }
     }

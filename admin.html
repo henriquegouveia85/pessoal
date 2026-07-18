@@ -160,6 +160,7 @@
       overflow: hidden;
       box-shadow: 0 4px 15px rgba(0,0,0,0.08);
       transition: transform 0.3s;
+      position: relative;
     }
     .foto-card:hover { transform: translateY(-5px); }
     .foto-card img {
@@ -359,6 +360,12 @@
         </button>
         <span class="status-pausa" id="statusPausa">⏸️ GALERIA PAUSADA</span>
       </div>
+      <div class="controles-grupo">
+        <button class="btn" id="btnModeracao" onclick="toggleModeracao()" style="background:#9b59b6;color:white;">
+          <span id="iconeModeracao">🛡️</span>
+          <span id="textoModeracao">Moderação: OFF</span>
+        </button>
+      </div>
       <div class="controles-grupo" style="align-items:center; gap:12px;">
         <span style="font-size:0.85em; font-weight:600; color:#7f8c8d;">🖼️ Modo:</span>
         <select id="seletorModo" onchange="definirModo(this.value)" style="padding:8px 12px; border-radius:8px; border:2px solid #e0e0e0; font-weight:600; font-size:0.9em;">
@@ -381,17 +388,51 @@
       </div>
     </div>
     
+    <div class="controles" style="margin-bottom:10px;">
+      <div class="controles-grupo" style="flex:1;">
+        <input type="text" id="filtroBusca" placeholder="🔍 Buscar por nome do convidado..." oninput="aplicarFiltro()" style="flex:1; padding:10px 14px; border-radius:10px; border:2px solid #e0e0e0; font-size:0.95em; outline:none; font-family:'Montserrat',sans-serif; min-width:200px;">
+      </div>
+      <div class="controles-grupo">
+        <button class="btn btn-perigo" id="btnDeletarSelecionadas" onclick="deletarSelecionadas()" disabled style="opacity:0.5;">
+          🗑️ Deletar Selecionadas (<span id="numSelecionadas">0</span>)
+        </button>
+      </div>
+    </div>
+
     <div class="abas">
       <div class="aba ativa" onclick="mudarAba('fotos', this)">📸 Fotos</div>
+      <div class="aba" onclick="mudarAba('pendentes', this)">⏳ Pendentes</div>
       <div class="aba" onclick="mudarAba('mensagens', this)">💬 Mensagens</div>
+      <div class="aba" onclick="mudarAba('grafico', this)">📊 Gráfico</div>
     </div>
     
     <div class="conteudo-aba ativo" id="aba-fotos">
       <div class="fotos-grid" id="fotosGrid"></div>
     </div>
     
+    <div class="conteudo-aba" id="aba-pendentes">
+      <div style="margin-bottom:15px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <span id="pendentesCount" style="font-weight:600; color:#7f8c8d;">⏳ 0 fotos aguardando aprovação</span>
+        <button class="btn btn-sucesso" onclick="aprovarTodasPendentes()" style="font-size:0.85em; padding:8px 16px;">✅ Aprovar Todas</button>
+      </div>
+      <div class="fotos-grid" id="pendentesGrid"></div>
+    </div>
+    
     <div class="conteudo-aba" id="aba-mensagens">
       <div class="mensagens-lista" id="mensagensLista"></div>
+    </div>
+
+    <div class="conteudo-aba" id="aba-grafico">
+      <div style="background:white; border-radius:16px; padding:25px; box-shadow:0 4px 15px rgba(0,0,0,0.08);">
+        <h3 style="font-family:'Playfair Display',serif; color:#2c3e50; margin-bottom:20px;">📊 Atividade de Envio</h3>
+        <canvas id="graficoCanvas" width="800" height="350" style="width:100%; height:auto; max-width:100%;"></canvas>
+        <div style="display:flex; gap:30px; margin-top:20px; flex-wrap:wrap; justify-content:center;">
+          <div style="text-align:center;"><div style="font-size:2em; font-weight:700; color:#667eea;" id="grafTotalFotos">0</div><div style="font-size:0.85em; color:#7f8c8d;">Total de Fotos</div></div>
+          <div style="text-align:center;"><div style="font-size:2em; font-weight:700; color:#27ae60;" id="grafDiaMaisFotos">-</div><div style="font-size:0.85em; color:#7f8c8d;">Dia com Mais Fotos</div></div>
+          <div style="text-align:center;"><div style="font-size:2em; font-weight:700; color:#e74c3c;" id="grafHoraPico">-</div><div style="font-size:0.85em; color:#7f8c8d;">Hora de Pico</div></div>
+          <div style="text-align:center;"><div style="font-size:2em; font-weight:700; color:#f39c12;" id="grafMediaHora">-</div><div style="font-size:0.85em; color:#7f8c8d;">Média por Hora</div></div>
+        </div>
+      </div>
     </div>
   </div>
   
@@ -557,7 +598,14 @@
         return;
       }
       
-      grid.innerHTML = fotos.map(foto => {
+      const termo = (document.getElementById('filtroBusca').value || '').toLowerCase().trim();
+      
+      grid.innerHTML = fotos.filter(foto => {
+        if (!termo) return true;
+        const desc = (foto.descricao || '').toLowerCase();
+        const nomeArquivo = (foto.nome || '').toLowerCase();
+        return desc.includes(termo) || nomeArquivo.includes(termo);
+      }).map(foto => {
         let nome = 'Convidado';
         let mensagem = '';
         
@@ -575,14 +623,18 @@
         
         return `
           <div class="foto-card">
+            <label style="position:absolute; top:8px; left:8px; z-index:10; background:rgba(255,255,255,0.9); border-radius:6px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+              <input type="checkbox" class="selecao-foto" value="${foto.id}" onchange="atualizarSelecao()" style="width:18px;height:18px;cursor:pointer;">
+            </label>
             <img src="${foto.url}" alt="Foto" onclick="abrirLightbox('${foto.url}')">
             <div class="foto-info">
               <div class="foto-nome">${nome}</div>
               <div class="foto-data">${data}</div>
               ${mensagem ? `<div class="foto-mensagem">"${mensagem}"</div>` : ''}
-              <button class="btn-deletar" onclick="confirmarDelete('${foto.id}')">
-                🗑️ Deletar Foto
-              </button>
+              <div style="display:flex; gap:6px;">
+                <button class="btn-deletar" onclick="confirmarDelete('${foto.id}')" style="flex:1;">🗑️</button>
+                <button class="btn" onclick="baixarFoto('${foto.url}', '${foto.nome}')" style="flex:1; background:#3498db; color:white; padding:10px;">⬇️</button>
+              </div>
             </div>
           </div>
         `;
@@ -741,6 +793,10 @@
       
       el.classList.add('ativa');
       document.getElementById('aba-' + aba).classList.add('ativo');
+
+      if (aba === 'grafico') {
+        setTimeout(() => desenharGrafico(todasFotos), 100);
+      }
     }
     
     function abrirLightbox(url) {
@@ -764,10 +820,364 @@
       }, 5000);
     }
     
+    // ===== MODERAÇÃO =====
+    let moderacaoAtiva = false;
+    let fotosPendentes = [];
+
+    async function verificarModeracao() {
+      try {
+        const resposta = await fetch(URL_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ acao: 'verificar_moderacao' })
+        });
+        const resultado = await resposta.json();
+        if (resultado.sucesso) {
+          moderacaoAtiva = resultado.ativa;
+          atualizarInterfaceModeracao();
+        }
+      } catch (erro) { console.error('Erro moderação:', erro); }
+    }
+
+    function atualizarInterfaceModeracao() {
+      const icone = document.getElementById('iconeModeracao');
+      const texto = document.getElementById('textoModeracao');
+      const btn = document.getElementById('btnModeracao');
+      if (moderacaoAtiva) {
+        icone.textContent = '🛡️';
+        texto.textContent = 'Moderação: ON';
+        btn.style.background = '#27ae60';
+      } else {
+        icone.textContent = '🛡️';
+        texto.textContent = 'Moderação: OFF';
+        btn.style.background = '#9b59b6';
+      }
+    }
+
+    async function toggleModeracao() {
+      try {
+        const nova = !moderacaoAtiva;
+        const resposta = await fetch(URL_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ acao: 'definir_moderacao', ativar: nova })
+        });
+        const resultado = await resposta.json();
+        if (resultado.sucesso) {
+          moderacaoAtiva = nova;
+          atualizarInterfaceModeracao();
+          mostrarToast(nova ? 'Moderação ativada' : 'Moderação desativada', 'sucesso');
+        }
+      } catch (erro) { mostrarToast('Erro: ' + erro.message, 'erro'); }
+    }
+
+    async function carregarPendentes() {
+      try {
+        const resposta = await fetch(URL_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ acao: 'listar_pendentes' })
+        });
+        const fotos = await resposta.json();
+        if (!Array.isArray(fotos)) return;
+        fotosPendentes = fotos;
+        renderizarPendentes(fotos);
+      } catch (erro) { console.error('Erro pendentes:', erro); }
+    }
+
+    function renderizarPendentes(fotos) {
+      const grid = document.getElementById('pendentesGrid');
+      document.getElementById('pendentesCount').textContent = '⏳ ' + fotos.length + ' foto(s) aguardando aprovação';
+
+      if (fotos.length === 0) {
+        grid.innerHTML = '<p style="text-align:center; color:#7f8c8d; padding:40px;">Nenhuma foto pendente</p>';
+        return;
+      }
+
+      grid.innerHTML = fotos.map(foto => {
+        let nome = 'Convidado';
+        let mensagem = '';
+
+        if (foto.descricao) {
+          const partes = foto.descricao.split(': ');
+          if (partes.length > 1) {
+            nome = partes[0];
+            mensagem = partes.slice(1).join(': ');
+          } else {
+            nome = foto.descricao;
+          }
+        }
+
+        const data = new Date(foto.data).toLocaleString('pt-BR');
+
+        return `
+          <div class="foto-card" style="border:2px solid #f39c12;">
+            <img src="${foto.url}" alt="Foto pendente" onclick="abrirLightbox('${foto.url}')">
+            <div class="foto-info">
+              <div class="foto-nome">${nome}</div>
+              <div class="foto-data">${data}</div>
+              ${mensagem ? `<div class="foto-mensagem">"${mensagem}"</div>` : ''}
+              <div style="display:flex; gap:6px;">
+                <button class="btn btn-sucesso" onclick="aprovarFoto('${foto.id}')" style="flex:1; padding:10px; font-size:0.85em;">✅ Aprovar</button>
+                <button class="btn btn-perigo" onclick="rejeitarFoto('${foto.id}')" style="flex:1; padding:10px; font-size:0.85em;">🗑️ Rejeitar</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function aprovarFoto(id) {
+      try {
+        const resposta = await fetch(URL_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ acao: 'aprovar_foto', id: id })
+        });
+        const resultado = await resposta.json();
+        if (resultado.sucesso) {
+          mostrarToast('Foto aprovada!', 'sucesso');
+          carregarPendentes();
+          setTimeout(carregarDados, 500);
+        } else {
+          mostrarToast('Erro: ' + resultado.erro, 'erro');
+        }
+      } catch (erro) { mostrarToast('Erro: ' + erro.message, 'erro'); }
+    }
+
+    async function rejeitarFoto(id) {
+      if (!confirm('Rejeitar esta foto? Ela será removida permanentemente.')) return;
+      try {
+        const resposta = await fetch(URL_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ acao: 'deletar', id: id })
+        });
+        const resultado = await resposta.json();
+        if (resultado.sucesso) {
+          mostrarToast('Foto rejeitada', 'sucesso');
+          carregarPendentes();
+        } else {
+          mostrarToast('Erro: ' + resultado.erro, 'erro');
+        }
+      } catch (erro) { mostrarToast('Erro: ' + erro.message, 'erro'); }
+    }
+
+    async function aprovarTodasPendentes() {
+      if (!confirm('Aprovar todas as ' + fotosPendentes.length + ' fotos pendentes?')) return;
+      for (const foto of fotosPendentes) {
+        try {
+          await fetch(URL_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ acao: 'aprovar_foto', id: foto.id })
+          });
+        } catch (erro) { console.error(erro); }
+      }
+      mostrarToast(fotosPendentes.length + ' fotos aprovadas!', 'sucesso');
+      carregarPendentes();
+      setTimeout(carregarDados, 500);
+    }
+
+    // ===== FILTRO =====
+    function aplicarFiltro() {
+      carregarDados();
+    }
+
+    // ===== SELEÇÃO EM LOTE =====
+    let idsSelecionados = new Set();
+
+    function atualizarSelecao() {
+      idsSelecionados.clear();
+      document.querySelectorAll('.selecao-foto:checked').forEach(cb => {
+        idsSelecionados.add(cb.value);
+      });
+      const num = idsSelecionados.size;
+      document.getElementById('numSelecionadas').textContent = num;
+      const btn = document.getElementById('btnDeletarSelecionadas');
+      btn.disabled = num === 0;
+      btn.style.opacity = num === 0 ? '0.5' : '1';
+    }
+
+    async function deletarSelecionadas() {
+      if (idsSelecionados.size === 0) return;
+      if (!confirm('Deletar ' + idsSelecionados.size + ' foto(s) permanentemente?')) return;
+
+      const ids = Array.from(idsSelecionados);
+      for (const id of ids) {
+        try {
+          await fetch(URL_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ acao: 'deletar', id: id })
+          });
+        } catch (erro) { console.error(erro); }
+      }
+      mostrarToast(ids.length + ' foto(s) deletada(s)!', 'sucesso');
+      idsSelecionados.clear();
+      atualizarSelecao();
+      setTimeout(carregarDados, 500);
+    }
+
+    // ===== DOWNLOAD =====
+    function baixarFoto(url, nome) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = nome || 'foto.jpg';
+      a.target = '_blank';
+      a.click();
+    }
+
+    // ===== GRÁFICO =====
+    function desenharGrafico(fotos) {
+      const canvas = document.getElementById('graficoCanvas');
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = 350 * dpr;
+      ctx.scale(dpr, dpr);
+      const W = rect.width;
+      const H = 350;
+
+      ctx.clearRect(0, 0, W, H);
+
+      if (fotos.length === 0) {
+        ctx.fillStyle = '#7f8c8d';
+        ctx.font = '16px Montserrat, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Nenhuma foto para exibir', W/2, H/2);
+        return;
+      }
+
+      const horas = Array(24).fill(0);
+      const dias = {};
+
+      fotos.forEach(f => {
+        const d = new Date(f.data);
+        const h = d.getHours();
+        horas[h]++;
+        const chave = d.toLocaleDateString('pt-BR');
+        dias[chave] = (dias[chave] || 0) + 1;
+      });
+
+      const maxFotos = Math.max(...horas, 1);
+      const padding = { top: 30, right: 20, bottom: 40, left: 50 };
+      const chartW = W - padding.left - padding.right;
+      const chartH = H - padding.top - padding.bottom;
+      const barW = Math.max(8, chartW / 24 - 4);
+
+      // Fundo
+      ctx.fillStyle = '#f8f9fa';
+      ctx.fillRect(0, 0, W, H);
+
+      // Linhas de grade
+      ctx.strokeStyle = '#e0e0e0';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const y = padding.top + (chartH / 4) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(W - padding.right, y);
+        ctx.stroke();
+        ctx.fillStyle = '#95a5a6';
+        ctx.font = '11px Montserrat, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(Math.round(maxFotos - (maxFotos / 4) * i), padding.left - 8, y + 4);
+      }
+
+      // Barras
+      horas.forEach((count, h) => {
+        const x = padding.left + (chartW / 24) * h + 2;
+        const barH = (count / maxFotos) * chartH;
+        const y = padding.top + chartH - barH;
+
+        const grad = ctx.createLinearGradient(x, y, x, padding.top + chartH);
+        if (count === Math.max(...horas) && count > 0) {
+          grad.addColorStop(0, '#e74c3c');
+          grad.addColorStop(1, '#c0392b');
+        } else {
+          grad.addColorStop(0, '#667eea');
+          grad.addColorStop(1, '#764ba2');
+        }
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.roundRect(x, y, barW, barH, [3, 3, 0, 0]);
+        ctx.fill();
+
+        // Rótulo da hora
+        if (h % 2 === 0) {
+          ctx.fillStyle = '#7f8c8d';
+          ctx.font = '10px Montserrat, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(h + 'h', x + barW/2, H - padding.bottom + 18);
+        }
+
+        // Valor
+        if (count > 0) {
+          ctx.fillStyle = '#2c3e50';
+          ctx.font = 'bold 9px Montserrat, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(count, x + barW/2, y - 5);
+        }
+      });
+
+      // Título do eixo X
+      ctx.fillStyle = '#7f8c8d';
+      ctx.font = '12px Montserrat, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Horário do dia', W/2, H - 5);
+
+      // Estatísticas
+      const diasArray = Object.entries(dias).sort((a, b) => b[1] - a[1]);
+      const diaMaisFotos = diasArray.length > 0 ? diasArray[0][0] + ' (' + diasArray[0][1] + ')' : '-';
+      const horaPico = horas.indexOf(Math.max(...horas)) + 'h (' + Math.max(...horas) + ')';
+      const total = fotos.length;
+      const mediaHora = (total / 24).toFixed(1);
+
+      document.getElementById('grafTotalFotos').textContent = total;
+      document.getElementById('grafDiaMaisFotos').textContent = diaMaisFotos;
+      document.getElementById('grafHoraPico').textContent = horaPico;
+      document.getElementById('grafMediaHora').textContent = mediaHora + '/h';
+    }
+
+    // roundRect polyfill para canvas
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii) {
+        const r = Array.isArray(radii) ? radii : [radii, radii, radii, radii];
+        const [tl, tr, br, bl] = r.map(v => Math.min(v || 0, Math.min(w, h) / 2));
+        this.moveTo(x + tl, y);
+        this.lineTo(x + w - tr, y);
+        this.quadraticCurveTo(x + w, y, x + w, y + tr);
+        this.lineTo(x + w, y + h - br);
+        this.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+        this.lineTo(x + bl, y + h);
+        this.quadraticCurveTo(x, y + h, x, y + h - bl);
+        this.lineTo(x, y + tl);
+        this.quadraticCurveTo(x, y, x + tl, y);
+        this.closePath();
+        return this;
+      };
+    }
+
+    // Atualiza gráfico após carregar dados
+    const carregarDadosOriginal = carregarDados;
+    carregarDados = function() {
+      return carregarDadosOriginal().then(function() {
+        desenharGrafico(todasFotos);
+      });
+    };
+
+    // ===== INICIALIZAÇÃO =====
     carregarDados();
     carregarModo();
     carregarFullscreen();
+    verificarModeracao();
+    carregarPendentes();
     setInterval(carregarDados, 15000);
+    setInterval(verificarModeracao, 10000);
+    setInterval(carregarPendentes, 10000);
   </script>
 </body>
 </html>
