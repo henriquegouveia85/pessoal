@@ -556,6 +556,7 @@
     let totalFotosGlobal = 0;
     let totalConvidadosGlobal = 0;
     let galeriaPausada = false;
+    let exibirMsg = true;
     let modoExibicao = 'cover';
     let fullscreenAuto = true;
     let modoSlideshow = false;
@@ -598,7 +599,19 @@
       
       return galeriaPausada;
     }
-    
+
+    async function verificarExibirMsg() {
+      try {
+        const resposta = await fetch(URL_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ acao: 'verificar_exibir_msg' })
+        });
+        const resultado = await resposta.json();
+        if (resultado.sucesso) exibirMsg = resultado.habilitado;
+      } catch (erro) { console.error('Erro exibir msg:', erro); }
+    }
+
     let scrollPosition = 0;
     let scrollDirection = 1;
     
@@ -767,7 +780,7 @@
         overlay.innerHTML = `
           <div class="destaque-msg">
             <div class="destaque-nome">${info.nome}</div>
-            ${info.mensagem ? '<div class="destaque-mensagem">"'+info.mensagem+'"</div>' : ''}
+            ${info.mensagem && exibirMsg ? '<div class="destaque-mensagem">"'+info.mensagem+'"</div>' : ''}
           </div>
           ${ehNova ? '<div class="destaque-badge">✨ Nova!</div>' : ''}
         `;
@@ -813,10 +826,10 @@
           return `
             <div class="photo ${ehNova ? 'entrada' : ''}">
               <img src="${foto.url}" alt="Foto" loading="lazy">
-              ${info.mensagem ? '<div class="photo-msg-icon">💬</div>' : ''}
+              ${info.mensagem && exibirMsg ? '<div class="photo-msg-icon">💬</div>' : ''}
               <div class="photo-overlay">
                 <div class="photo-nome">${info.nome}</div>
-                ${info.mensagem ? '<div class="photo-msg">"'+info.mensagem+'"</div>' : ''}
+                ${info.mensagem && exibirMsg ? '<div class="photo-msg">"'+info.mensagem+'"</div>' : ''}
               </div>
             </div>
           `;
@@ -975,11 +988,13 @@
     verificarPausa();
     verificarModo();
     verificarFullscreen();
+    verificarExibirMsg();
     carregarFotos();
     setInterval(carregarFotos, 8000);
     setInterval(verificarPausa, 3000);
     setInterval(verificarModo, 5000);
     setInterval(verificarFullscreen, 5000);
+    setInterval(verificarExibirMsg, 5000);
   </script>
 </body>
 </html>

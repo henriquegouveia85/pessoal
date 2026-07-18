@@ -1,6 +1,7 @@
 const PASTA_ID = '1c9ZZsg7TpM_cHbWFxFqeOw2SymYQqfqW';
 const ARQUIVO_PAUSA = 'galeria_pausada.txt';
 const ARQUIVO_MODERACAO = 'moderacao_ativa.txt';
+const ARQUIVO_EXIBIR_MSG = 'exibir_mensagens.txt';
 const PREFIXO_PENDENTE = 'PENDING|';
 
 function doPost(e) {
@@ -70,6 +71,27 @@ function doPost(e) {
       } catch (err) {
         return ContentService.createTextOutput(JSON.stringify({sucesso: false, erro: err.toString()})).setMimeType(ContentService.MimeType.JSON);
       }
+    }
+
+    if (acao === 'verificar_exibir_msg') {
+      const pasta = DriveApp.getFolderById(PASTA_ID);
+      const arquivos = pasta.getFilesByName(ARQUIVO_EXIBIR_MSG);
+      const habilitado = !arquivos.hasNext();
+      return ContentService.createTextOutput(JSON.stringify({sucesso: true, habilitado: habilitado})).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (acao === 'definir_exibir_msg') {
+      const habilitado = data.habilitado === true || data.habilitado === 'true';
+      const pasta = DriveApp.getFolderById(PASTA_ID);
+      try {
+        const arquivos = pasta.getFilesByName(ARQUIVO_EXIBIR_MSG);
+        while (arquivos.hasNext()) arquivos.next().setTrashed(true);
+      } catch (err) {}
+      if (!habilitado) {
+        const blob = Utilities.newBlob('DESATIVADO', 'text/plain', ARQUIVO_EXIBIR_MSG);
+        pasta.createFile(blob);
+      }
+      return ContentService.createTextOutput(JSON.stringify({sucesso: true, habilitado: habilitado})).setMimeType(ContentService.MimeType.JSON);
     }
 
     if (acao === 'pausar') {

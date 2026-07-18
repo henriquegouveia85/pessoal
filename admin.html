@@ -365,6 +365,10 @@
           <span id="iconeModeracao">🛡️</span>
           <span id="textoModeracao">Moderação: OFF</span>
         </button>
+        <button class="btn" id="btnExibirMsg" onclick="toggleExibirMsg()" style="background:#27ae60;color:white;">
+          <span id="iconeMsg">💬</span>
+          <span id="textoMsg">Mensagens: ON</span>
+        </button>
       </div>
       <div class="controles-grupo" style="align-items:center; gap:12px;">
         <span style="font-size:0.85em; font-weight:600; color:#7f8c8d;">🖼️ Modo:</span>
@@ -871,6 +875,48 @@
       } catch (erro) { mostrarToast('Erro: ' + erro.message, 'erro'); }
     }
 
+    // ===== EXIBIR MENSAGENS =====
+    let exibirMsg = true;
+
+    async function verificarExibirMsg() {
+      try {
+        const resposta = await fetch(URL_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ acao: 'verificar_exibir_msg' })
+        });
+        const resultado = await resposta.json();
+        if (resultado.sucesso) {
+          exibirMsg = resultado.habilitado;
+          atualizarInterfaceMsg();
+        }
+      } catch (erro) { console.error('Erro exibir msg:', erro); }
+    }
+
+    function atualizarInterfaceMsg() {
+      const texto = document.getElementById('textoMsg');
+      const btn = document.getElementById('btnExibirMsg');
+      texto.textContent = 'Mensagens: ' + (exibirMsg ? 'ON' : 'OFF');
+      btn.style.background = exibirMsg ? '#27ae60' : '#7f8c8d';
+    }
+
+    async function toggleExibirMsg() {
+      try {
+        const nova = !exibirMsg;
+        const resposta = await fetch(URL_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ acao: 'definir_exibir_msg', habilitado: nova })
+        });
+        const resultado = await resposta.json();
+        if (resultado.sucesso) {
+          exibirMsg = nova;
+          atualizarInterfaceMsg();
+          mostrarToast(nova ? 'Mensagens visíveis no telão' : 'Mensagens ocultas no telão', 'sucesso');
+        }
+      } catch (erro) { mostrarToast('Erro: ' + erro.message, 'erro'); }
+    }
+
     async function carregarPendentes() {
       try {
         const resposta = await fetch(URL_API, {
@@ -1174,9 +1220,11 @@
     carregarModo();
     carregarFullscreen();
     verificarModeracao();
+    verificarExibirMsg();
     carregarPendentes();
     setInterval(carregarDados, 15000);
     setInterval(verificarModeracao, 10000);
+    setInterval(verificarExibirMsg, 10000);
     setInterval(carregarPendentes, 10000);
   </script>
 </body>
