@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>QR Code - Galeria</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+  <script src="config.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a0a; font-family: 'Montserrat', sans-serif; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .container { text-align: center; padding: 40px; }
+    .header { margin-bottom: 40px; }
+    .header h1 { font-family: 'Playfair Display', serif; font-size: 2.5em; letter-spacing: 4px; font-weight: 400; margin-bottom: 10px; }
+    .header p { opacity: 0.6; letter-spacing: 2px; font-weight: 300; }
+    .qr-wrapper { display: inline-block; background: #fff; padding: 20px; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); margin-bottom: 30px; }
+    #qrcode img { width: 280px; height: 280px; display: block; }
+    .url-display { font-size: 1.1em; opacity: 0.8; word-break: break-all; max-width: 500px; margin: 20px auto; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); font-weight: 300; }
+    .acoes { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+    .acoes button, .acoes a { padding: 12px 28px; background: #f1c40f; color: #000; border: none; border-radius: 30px; font-size: 0.9em; font-weight: 600; cursor: pointer; text-decoration: none; transition: background 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+    .acoes button:hover, .acoes a:hover { background: #d4ac0d; }
+    .acoes .secundario { background: rgba(255,255,255,0.1); color: #fff; }
+    .acoes .secundario:hover { background: rgba(255,255,255,0.2); }
+    @media (max-width: 600px) { .container { padding: 20px; } #qrcode img { width: 220px; height: 220px; } .header h1 { font-size: 1.8em; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 id="headerNome">QR Code</h1>
+      <p>COMPARTILHE FOTOS DO EVENTO</p>
+    </div>
+    <div class="qr-wrapper" id="qrcode"></div>
+    <div class="url-display" id="urlDisplay">Carregando...</div>
+    <div class="acoes">
+      <button onclick="baixarQR()">📥 Baixar QR Code</button>
+      <button class="secundario" onclick="imprimirQR()">🖨️ Imprimir</button>
+      <a class="secundario" href="index.html" target="_blank">📤 Abrir Upload</a>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script>
+    const cfg = typeof CONFIG !== 'undefined' ? CONFIG : {};
+    const URL_UPLOAD = cfg.google ? cfg.google.urlUpload : window.location.origin + '/index.html';
+    const NOME_EVENTO = cfg.evento ? cfg.evento.nome : 'Galeria';
+
+    document.getElementById('headerNome').textContent = NOME_EVENTO;
+    document.getElementById('urlDisplay').textContent = URL_UPLOAD;
+
+    const qr = new QRCode(document.getElementById('qrcode'), {
+      text: URL_UPLOAD, width: 280, height: 280,
+      colorDark: '#000000', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+
+    function baixarQR() {
+      const img = document.querySelector('#qrcode img');
+      if (!img) return;
+      const link = document.createElement('a');
+      link.download = 'qr-code-' + NOME_EVENTO.replace(/\s+/g, '-').toLowerCase() + '.png';
+      link.href = img.src;
+      link.click();
+    }
+
+    function imprimirQR() {
+      const conteudo = document.querySelector('.qr-wrapper').innerHTML;
+      const janela = window.open('', '_blank', 'width=400,height=400');
+      janela.document.write('<html><head><title>QR Code - ' + NOME_EVENTO + '</title></head><body style="text-align:center;padding:40px;background:#fff;">' + conteudo + '</body></html>');
+      janela.document.close();
+      janela.focus();
+      janela.print();
+    }
+  </script>
+</body>
+</html>

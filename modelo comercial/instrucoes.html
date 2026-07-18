@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📦 Sistema Comercial - Galeria de Fotos Ao Vivo</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;600;700&family=Fira+Code&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Montserrat', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh; color: #e0e0e0; line-height: 1.6;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+  .header { text-align: center; color: white; margin-bottom: 40px; }
+  .header h1 { font-family: 'Playfair Display', serif; font-size: 3em; letter-spacing: 3px; margin-bottom: 10px; }
+  .header p { font-size: 1.2em; opacity: 0.9; font-style: italic; }
+  .header .tag { display: inline-block; background: #f1c40f; color: #000; padding: 4px 16px; border-radius: 20px; font-size: 0.8em; font-weight: 700; margin-top: 10px; }
+  .card {
+    background: rgba(255,255,255,0.05); backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px; padding: 30px; margin-bottom: 25px;
+  }
+  .card h2 { font-family: 'Playfair Display', serif; color: #f1c40f; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+  .card h3 { color: #fff; margin: 20px 0 10px; }
+  .card p, .card li { color: #b0b0b0; margin-bottom: 10px; }
+  .card ul { padding-left: 25px; }
+  .card strong { color: #fff; }
+  .card code { background: rgba(241, 196, 15, 0.15); color: #f1c40f; padding: 2px 8px; border-radius: 4px; font-family: 'Fira Code', monospace; font-size: 0.9em; }
+  .info-box { background: rgba(102, 126, 234, 0.15); border-left: 4px solid #667eea; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+  .warning-box { background: rgba(243, 156, 18, 0.15); border-left: 4px solid #f39c12; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+  .success-box { background: rgba(39, 174, 96, 0.15); border-left: 4px solid #27ae60; padding: 15px 20px; border-radius: 8px; margin: 15px 0; }
+  .step { display: flex; gap: 15px; margin: 15px 0; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 10px; }
+  .step-num { background: #f1c40f; color: #000; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
+  .step-content { flex: 1; }
+  .step-content strong { color: #fff; }
+  table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+  th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  th { background: rgba(255,255,255,0.05); color: #f1c40f; font-weight: 600; }
+  td { color: #b0b0b0; }
+  .file-tag { display: inline-block; background: #667eea; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85em; font-weight: 600; margin-right: 8px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.8em; font-weight: 600; margin-left: 8px; }
+  .badge-feature { background: #27ae60; color: white; }
+  .badge-new { background: #f1c40f; color: #000; }
+  .footer { text-align: center; color: rgba(255,255,255,0.5); margin-top: 40px; padding: 30px; font-size: 0.9em; }
+  .toc { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 25px 30px; margin-bottom: 25px; }
+  .toc h2 { font-family: 'Playfair Display', serif; color: #f1c40f; margin-bottom: 15px; }
+  .toc ul { list-style: none; padding: 0; }
+  .toc li { padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,0.08); }
+  .toc li:last-child { border-bottom: none; }
+  .toc a { color: #b0b0b0; text-decoration: none; font-weight: 500; transition: color 0.3s; }
+  .toc a:hover { color: #f1c40f; }
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin: 15px 0; }
+  .feature-item { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 20px; text-align: center; }
+  .feature-item .icon { font-size: 2em; margin-bottom: 10px; }
+  .feature-item h4 { color: #fff; margin-bottom: 5px; }
+  .feature-item p { font-size: 0.85em; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>📸 Galeria Ao Vivo</h1>
+    <p>Sistema profissional de fotos ao vivo para eventos</p>
+    <span class="tag">✨ Comercial · Multi-evento · Autenticado</span>
+  </div>
+
+  <div class="toc">
+    <h2>📋 Índice</h2>
+    <ul>
+      <li><a href="#visao-geral">1. Visão Geral do Produto</a></li>
+      <li><a href="#arquitetura">2. Arquitetura do Sistema</a></li>
+      <li><a href="#arquivos">3. Estrutura dos Arquivos</a></li>
+      <li><a href="#config">4. config.js — Central de Configurações <span class="badge badge-new">NOVO</span></a></li>
+      <li><a href="#index">5. index.html — Página da Câmera</a></li>
+      <li><a href="#galeria">6. galeria.html — Página do Telão <span class="badge badge-new">SLIDESHOW</span></a></li>
+      <li><a href="#admin">7. admin.html — Painel Administrativo <span class="badge badge-new">AUTH</span></a></li>
+      <li><a href="#qrcode">8. qrcode.html — Gerador de QR Code</a></li>
+      <li><a href="#backend">9. Codigo.gs — Backend Apps Script</a></li>
+      <li><a href="#funcionalidades">10. Funcionalidades Comerciais</a></li>
+      <li><a href="#implantacao">11. Como Implantar</a></li>
+      <li><a href="#dicas">12. Dicas Operacionais</a></li>
+    </ul>
+  </div>
+
+  <div class="card" id="visao-geral">
+    <h2>📖 1. Visão Geral do Produto</h2>
+    <p>Sistema completo de galeria de fotos ao vivo para eventos (casamentos, formaturas, aniversários). Convidados tiram fotos pelo celular e elas aparecem em tempo real no telão com efeitos cinematográficos.</p>
+
+    <div class="success-box">
+      <strong>✅ 100% gratuito para operar!</strong><br>
+      Google Drive (armazenamento) + Google Apps Script (backend) + Netlify (hospedagem) = custo zero.
+    </div>
+
+    <div class="feature-grid">
+      <div class="feature-item"><div class="icon">📱</div><h4>Upload pelo celular</h4><p>Câmera ou galeria, com preview</p></div>
+      <div class="feature-item"><div class="icon">🖥️</div><h4>Telão ao vivo</h4><p>Integração com projetor/TV</p></div>
+      <div class="feature-item"><div class="icon">🎬</div><h4>Slideshow automático</h4><p>Após 5min sem fotos novas</p></div>
+      <div class="feature-item"><div class="icon">🖼️</div><h4>4 modos de exibição</h4><p>Cover, contain, blur, fill</p></div>
+      <div class="feature-item"><div class="icon">🔐</div><h4>Admin autenticado</h4><p>Painel protegido por senha</p></div>
+      <div class="feature-item"><div class="icon">📡</div><h4>Modo offline</h4><p>Fila local envia quando voltar</p></div>
+      <div class="feature-item"><div class="icon">💾</div><h4>Exportar relatório</h4><p>Relatório salvo no Drive</p></div>
+      <div class="feature-item"><div class="icon">📊</div><h4>Estatísticas</h4><p>Fotos, convidados, mensagens</p></div>
+    </div>
+  </div>
+
+  <div class="card" id="arquitetura">
+    <h2>🏗️ 2. Arquitetura do Sistema</h2>
+    <pre style="color:#b0b0b0; font-family:'Fira Code',monospace; font-size:0.85em; line-height:1.8; background:rgba(0,0,0,0.3); padding:20px; border-radius:12px; overflow-x:auto;">
+┌──────────────┐     ┌─────────────────┐     ┌─────────────┐
+│  index.html  │────▶│  Google Apps    │────▶│  Google     │
+│  (convidado) │     │  Script (API)   │     │  Drive      │
+└──────────────┘     └─────────────────┘     └──────┬──────┘
+                                                     │
+┌──────────────┐     ┌─────────────────┐            │
+│ galeria.html │◀────│  Google Apps    │◀───────────┘
+│ (telão)      │     │  Script (API)   │
+└──────────────┘     └─────────────────┘
+
+┌──────────────┐     ┌─────────────────┐
+│  admin.html  │────▶│  Google Apps    │
+│  (staff)     │     │  Script (API)   │
+└──────────────┘     └─────────────────┘
+
+┌──────────────┐     ┌─────────────────┐
+│ config.js    │     │  Configuração   │
+│ (central)    │────▶│  compartilhada  │
+└──────────────┘     └─────────────────┘</pre>
+
+    <h3>🔑 Configurações Padrão</h3>
+    <table>
+      <tr><th>Item</th><th>Valor</th><th>Local</th></tr>
+      <tr><td>ID da Pasta no Drive</td><td><code>config.js → google.pastaId</code></td><td>config.js</td></tr>
+      <tr><td>URL do Apps Script</td><td><code>config.js → google.urlScript</code></td><td>config.js</td></tr>
+      <tr><td>Limite de fotos/pessoa</td><td>50</td><td>config.js</td></tr>
+      <tr><td>Senha do admin</td><td><code>config.js → admin.senha</code></td><td>config.js</td></tr>
+      <tr><td>Slideshow idle</td><td>5 minutos</td><td>config.js</td></tr>
+      <tr><td>Modos de exibição</td><td>cover, contain, blur, fill</td><td>config.js + tecla B</td></tr>
+    </table>
+  </div>
+
+  <div class="card" id="arquivos">
+    <h2>📁 3. Estrutura dos Arquivos</h2>
+    <table>
+      <tr><th>Arquivo</th><th>Função</th><th>Status</th></tr>
+      <tr><td><code>config.js</code></td><td>Configuração centralizada do evento</td><td><span class="badge badge-new">NOVO</span></td></tr>
+      <tr><td><code>index.html</code></td><td>Página de upload para convidados</td><td>✅ Melhorado</td></tr>
+      <tr><td><code>galeria.html</code></td><td>Página do telão com slideshow</td><td>✅ Melhorado</td></tr>
+      <tr><td><code>admin.html</code></td><td>Painel administrativo com autenticação</td><td>✅ Melhorado</td></tr>
+      <tr><td><code>qrcode.html</code></td><td>Gerador de QR Code para impressão</td><td>✅ Melhorado</td></tr>
+      <tr><td><code>Codigo.gs</code></td><td>Backend Google Apps Script</td><td>✅ Melhorado</td></tr>
+      <tr><td><code>instrucoes.html</code></td><td>Este documento</td><td><span class="badge badge-new">NOVO</span></td></tr>
+    </table>
+  </div>
+
+  <div class="card" id="config">
+    <h2>⚙️ 4. config.js — Central de Configurações</h2>
+    <p><span class="file-tag">config.js</span> Arquivo central onde todas as configurações do evento são definidas. Todos os HTMLs importam este arquivo automaticamente.</p>
+    
+    <div class="info-box">
+      <strong>💡 Vantagem comercial:</strong> Para criar um novo evento, basta duplicar a pasta, editar o <code>config.js</code> e fazer deploy. Sem necessidade de editar código nos HTMLs.
+    </div>
+
+    <table>
+      <tr><th>Campo</th><th>Descrição</th><th>Exemplo</th></tr>
+      <tr><td><code>evento.nome</code></td><td>Nome dos noivos/aniversariantes</td><td>Maria Paula & Wilson</td></tr>
+      <tr><td><code>evento.data</code></td><td>Data do evento</td><td>15 de Julho de 2026</td></tr>
+      <tr><td><code>evento.hashtag</code></td><td>Hashtag do evento</td><td>#MariaPaulaEWilson</td></tr>
+      <tr><td><code>google.pastaId</code></td><td>ID da pasta no Google Drive</td><td>1c9ZZsg7...</td></tr>
+      <tr><td><code>google.urlScript</code></td><td>URL do Web App do Apps Script</td><td>https://script.google.com/...</td></tr>
+      <tr><td><code>limites.fotosPorPessoa</code></td><td>Máximo de fotos por convidado</td><td>50</td></tr>
+      <tr><td><code>limites.idleSlideshowMs</code></td><td>Tempo sem fotos novas para iniciar slideshow</td><td>300000 (5min)</td></tr>
+      <tr><td><code>admin.senha</code></td><td>Senha para acessar o painel admin</td><td>cpw2026</td></tr>
+      <tr><td><code>modosExibicao</code></td><td>Modos de exibição disponíveis</td><td>['cover','contain','blur','fill']</td></tr>
+    </table>
+  </div>
+
+  <div class="card" id="index">
+    <h2>📱 5. index.html — Página da Câmera</h2>
+    <p><span class="file-tag">index.html</span> Interface para convidados enviarem fotos pelo celular.</p>
+    
+    <h3>🎯 Funcionalidades</h3>
+    <ul>
+      <li>✅ Upload por câmera ou galeria</li>
+      <li>✅ Limite de fotos configurável (via config.js)</li>
+      <li>✅ Compressão automática para 1200px</li>
+      <li>✅ Thumbnails das fotos enviadas (armazenamento local)</li>
+      <li>✅ Modo offline com fila de envio</li>
+      <li>✅ Confetes ao enviar foto</li>
+      <li>✅ Contador de fotos do evento</li>
+    </ul>
+  </div>
+
+  <div class="card" id="galeria">
+    <h2>🖥️ 6. galeria.html — Página do Telão</h2>
+    <p><span class="file-tag">galeria.html</span> Exibe as fotos em tempo real na TV/projetor com efeitos cinematográficos.</p>
+
+    <div class="info-box">
+      <strong>💡 Teclas de atalho:</strong><br>
+      <strong>A</strong> — Tela de agradecimento<br>
+      <strong>B</strong> — Ciclar modo de exibição<br>
+      <strong>ESC</strong> — Fechar tela cheia / agradecimento
+    </div>
+
+    <h3>🎯 Funcionalidades</h3>
+    <ul>
+      <li>✅ Destaque com efeito Ken Burns</li>
+      <li>✅ Mural com grid rolante</li>
+      <li>✅ Corações caindo ao chegar foto nova</li>
+      <li>✅ <strong>Tela cheia automática</strong> por 5s ao chegar foto nova (ativável via admin)</li>
+      <li>✅ <strong>Slideshow automático</strong> após 5 minutos sem fotos novas (fade in/out)</li>
+      <li>✅ <strong>4 modos de exibição</strong> (tecla B): cover, contain, blur (fundo desfocado), fill</li>
+      <li>✅ Modo pausa sincronizado</li>
+      <li>✅ Tela de agradecimento com estatísticas (tecla A)</li>
+      <li>✅ Cache busting automático</li>
+    </ul>
+  </div>
+
+  <div class="card" id="admin">
+    <h2>🔐 7. admin.html — Painel Administrativo</h2>
+    <p><span class="file-tag">admin.html</span> Controle total do sistema com autenticação.</p>
+
+    <div class="warning-box">
+      <strong>⚠️ Autenticação:</strong> Ao acessar o admin, o sistema pede a senha definida no <code>config.js → admin.senha</code>. Sem a senha correta, o painel não é exibido.
+    </div>
+
+    <h3>🎯 Funcionalidades</h3>
+    <ul>
+      <li>✅ Autenticação por senha (configurável)</li>
+      <li>✅ Estatísticas em tempo real (fotos, convidados, mensagens)</li>
+      <li>✅ Pausar/Retomar galeria</li>
+      <li>✅ Seletor de modo de exibição</li>
+      <li>✅ Checkbox "Tela cheia ao chegar"</li>
+      <li>✅ Deletar fotos inadequadas (com confirmação)</li>
+      <li>✅ Lightbox ao clicar na foto</li>
+      <li>✅ Exportar relatório para o Drive</li>
+      <li>✅ Abas: Fotos / Mensagens</li>
+      <li>✅ Toast notifications com 5s de duração</li>
+    </ul>
+  </div>
+
+  <div class="card" id="qrcode">
+    <h2>🖨️ 8. qrcode.html — Gerador de QR Code</h2>
+    <p><span class="file-tag">qrcode.html</span> Cria QR Code personalizado para impressão nas mesas do evento.</p>
+    <ul>
+      <li>✅ URL configurável</li>
+      <li>✅ Nomes, data e hashtag dinâmicos (via config.js)</li>
+      <li>✅ Pronto para impressão (A4)</li>
+    </ul>
+  </div>
+
+  <div class="card" id="backend">
+    <h2>🔧 9. Codigo.gs — Backend Apps Script</h2>
+    <p><span class="file-tag">Codigo.gs</span> Código que roda no Google Apps Script (backend).</p>
+    
+    <h3>🎯 Ações da API</h3>
+    <table>
+      <tr><th>Ação</th><th>Método</th><th>Descrição</th></tr>
+      <tr><td><code>GET (doGet)</code></td><td>GET</td><td>Lista todas as fotos (exceto deletadas/lixeira)</td></tr>
+      <tr><td><code>upload (padrão)</code></td><td>POST</td><td>Faz upload de nova foto</td></tr>
+      <tr><td><code>deletar</code></td><td>POST</td><td>Move foto para lixeira</td></tr>
+      <tr><td><code>pausar</code></td><td>POST</td><td>Pausa/retoma a galeria</td></tr>
+      <tr><td><code>verificar_pausa</code></td><td>POST</td><td>Verifica se a galeria está pausada</td></tr>
+      <tr><td><code>definir_modo</code></td><td>POST</td><td>Define modo de exibição</td></tr>
+      <tr><td><code>verificar_modo</code></td><td>POST</td><td>Verifica modo atual</td></tr>
+      <tr><td><code>definir_fullscreen</code></td><td>POST</td><td>Ativa/desativa tela cheia automática</td></tr>
+      <tr><td><code>verificar_fullscreen</code></td><td>POST</td><td>Verifica estado da tela cheia</td></tr>
+      <tr><td><code>exportar</code></td><td>POST</td><td>Gera relatório .txt no Drive</td></tr>
+      <tr><td><code>verificar_senha</code></td><td>POST</td><td>Valida senha do admin</td></tr>
+    </table>
+
+    <h3>🛡️ Segurança</h3>
+    <ul>
+      <li>✅ Rate limit: 1 upload a cada 5s por nome</li>
+      <li>✅ Validação de tamanho: máximo 3MB</li>
+      <li>✅ Filtro <code>isTrashed()</code>: fotos deletadas não aparecem</li>
+      <li>✅ Verificação de senha no backend</li>
+    </ul>
+  </div>
+
+  <div class="card" id="funcionalidades">
+    <h2>⭐ 10. Funcionalidades Comerciais</h2>
+
+    <h3>🔐 Autenticação do Admin</h3>
+    <p>O admin.html agora pede senha antes de exibir o painel. A senha é validada tanto no frontend quanto no backend (via ação <code>verificar_senha</code> no Apps Script). Configurável em <code>config.js → admin.senha</code>.</p>
+
+    <h3>📁 Configuração Centralizada (config.js)</h3>
+    <p>Todos os parâmetros do evento em um único arquivo. Para criar um novo evento: copie a pasta, edite o config.js, e faça deploy. Zero necessidade de editar código HTML.</p>
+
+    <h3>🎬 Slideshow Automático</h3>
+    <p>Após 5 minutos sem nenhuma foto nova (configurável em <code>limites.idleSlideshowMs</code>), a galeria entra em modo slideshow em tela cheia, exibindo todas as fotos com transição fade in/out a cada 5 segundos. Ao chegar uma foto nova, o slideshow é interrompido e a nova foto é exibida.</p>
+
+    <h3>🖼️ Modos de Exibição</h3>
+    <p>Quatro modos disponíveis, cicláveis pela tecla <strong>B</strong> ou selecionáveis pelo admin:</p>
+    <ul>
+      <li><strong>cover</strong> — Padrão, corta para preencher a tela</li>
+      <li><strong>contain</strong> — Mostra a foto inteira, com bordas</li>
+      <li><strong>blur</strong> — Foto inteira com fundo desfocado (efeito Netflix)</li>
+      <li><strong>fill</strong> — Estica para preencher</li>
+    </ul>
+
+    <h3>📡 Suporte Offline</h3>
+    <p>Se o convidado estiver sem internet, a foto é salva no navegador e enviada automaticamente quando a conexão voltar.</p>
+
+    <h3>🖼️ Thumbnails Locais</h3>
+    <p>Miniaturas (80px) das fotos enviadas são salvas no navegador e exibidas em grid abaixo do formulário de upload.</p>
+  </div>
+
+  <div class="card" id="implantacao">
+    <h2>🚀 11. Como Implantar</h2>
+
+    <h3>📌 Passo 1: Google Apps Script</h3>
+    <div class="step"><div class="step-num">1</div><div class="step-content">Acesse <strong>script.google.com</strong> e crie um novo projeto</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-content">Cole o código do <code>Codigo.gs</code> no editor e salve (Ctrl+S)</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-content">Crie <strong>uma pasta no Google Drive</strong> para as fotos e copie o ID da URL (ex: <code>1c9ZZsg7...</code>)</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-content">No código, altere a constante <code>PASTA_ID</code> para o ID da sua pasta</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-content">Vá em <strong>Implantar → Gerenciar implantações → ✏️ → ⚙️ → Nova versão → Implantar</strong></div></div>
+    <div class="step"><div class="step-num">6</div><div class="step-content">Copie a URL gerada (termina em <code>/exec</code>)</div></div>
+
+    <h3>📌 Passo 2: Configurar Projeto</h3>
+    <div class="step"><div class="step-num">1</div><div class="step-content">Edite o arquivo <code>config.js</code> com os dados do seu evento</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-content">Cole a URL do Apps Script em <code>google.urlScript</code></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-content">Cole o ID da pasta do Drive em <code>google.pastaId</code></div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-content">Defina a senha do admin em <code>admin.senha</code></div></div>
+
+    <h3>📌 Passo 3: Netlify (Hospedagem)</h3>
+    <div class="step"><div class="step-num">1</div><div class="step-content">Acesse <strong>app.netlify.com/drop</strong></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-content">Arraste a pasta <strong>modelo comercial</strong> para o site</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-content">Copie o link gerado (ex: <code>https://meu-evento.netlify.app</code>)</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-content">No QR Code, cole este link no campo URL e imprima</div></div>
+
+    <div class="success-box">
+      <strong>✅ Pronto!</strong> Agora teste:
+      <ul style="margin-top:10px; color:#b0b0b0;">
+        <li>Abrir <code>index.html</code> no celular e enviar uma foto</li>
+        <li>Abrir <code>galeria.html</code> no computador e ver a foto aparecer</li>
+        <li>Abrir <code>admin.html</code> (digitar senha) para gerenciar</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" id="dicas">
+    <h2>💡 12. Dicas Operacionais</h2>
+
+    <h3>📺 Antes do Evento</h3>
+    <ul>
+      <li>Abra <code>galeria.html</code> no notebook conectado à TV/projetor</li>
+      <li>Pressione <strong>F11</strong> para tela cheia no navegador</li>
+      <li>Abra <code>admin.html</code> em um tablet/celular (staff)</li>
+      <li>Teste a troca de modos (tecla B) e o slideshow</li>
+      <li>Imprima 4-6 QR Codes em papel couché 300g e coloque nas mesas</li>
+    </ul>
+
+    <h3>⏸️ Quando Pausar a Galeria</h3>
+    <ul>
+      <li>🎤 Durante discursos</li>
+      <li>🍽️ Durante o jantar</li>
+      <li>💃 Na primeira dança</li>
+      <li>🎂 No corte do bolo</li>
+    </ul>
+
+    <h3>🎭 No Final do Evento</h3>
+    <ul>
+      <li>Pressione <strong>A</strong> no notebook da TV para tela de agradecimento</li>
+      <li>Clique em <strong>"Exportar Relatório"</strong> no admin</li>
+      <li>Pressione <strong>ESC</strong> para fechar</li>
+    </ul>
+
+    <h3>🚨 Plano B</h3>
+    <ul>
+      <li>Tenha um notebook reserva</li>
+      <li>Use cabo de rede ao invés de Wi-Fi</li>
+      <li>Tenha um hotspot 4G de backup</li>
+      <li>Monitore o admin a cada 30 minutos</li>
+    </ul>
+
+    <div class="info-box">
+      <strong>📊 Limites do Google (Gratuito):</strong><br>
+      • 1.000 requisições/dia (suficiente para ~24h de evento)<br>
+      • Suporta tranquilamente 50-100 convidados e 500-1000 fotos
+    </div>
+
+    <h3>🔄 Para reutilizar em outro evento</h3>
+    <ol style="color:#b0b0b0; padding-left:20px;">
+      <li>Duplique a pasta <strong>modelo comercial</strong></li>
+      <li>Edite <code>config.js</code> com os novos dados do evento</li>
+      <li>Crie uma nova pasta no Drive e atualize <code>PASTA_ID</code> no Codigo.gs</li>
+      <li>Reimplante o Apps Script com nova versão</li>
+      <li>Faça deploy da nova pasta no Netlify</li>
+      <li>Pronto! Novo evento no ar</li>
+    </ol>
+  </div>
+
+  <div class="footer">
+    <p>📸 Galeria Ao Vivo — Sistema Comercial</p>
+    <p style="margin-top:10px;">Desenvolvido com ❤️</p>
+  </div>
+
+</div>
+</body>
+</html>

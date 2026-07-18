@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Galeria</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+  <script src="config.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a0a; font-family: 'Montserrat', sans-serif; color: #fff; min-height: 100vh; }
+    .login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0a0a; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .login-card { background: #1a1a2e; padding: 40px; border-radius: 20px; width: 380px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+    .login-card h2 { font-family: 'Playfair Display', serif; text-align: center; margin-bottom: 30px; font-size: 1.8em; letter-spacing: 3px; }
+    .login-card input { width: 100%; padding: 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: #fff; font-size: 1em; margin-bottom: 15px; outline: none; transition: border 0.3s; }
+    .login-card input:focus { border-color: #f1c40f; }
+    .login-card button { width: 100%; padding: 14px; background: #f1c40f; color: #000; border: none; border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer; transition: background 0.3s; }
+    .login-card button:hover { background: #d4ac0d; }
+    .login-card .erro { color: #e74c3c; font-size: 0.85em; text-align: center; margin-top: 10px; display: none; }
+    .admin-content { display: none; padding: 30px; max-width: 1200px; margin: 0 auto; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
+    .header h1 { font-family: 'Playfair Display', serif; font-size: 1.8em; letter-spacing: 2px; }
+    .header-acoes { display: flex; gap: 10px; flex-wrap: wrap; }
+    .header-acoes button, .header-acoes a { padding: 10px 20px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: #fff; cursor: pointer; font-size: 0.85em; text-decoration: none; transition: background 0.3s; display: inline-flex; align-items: center; gap: 6px; }
+    .header-acoes button:hover, .header-acoes a:hover { background: rgba(255,255,255,0.2); }
+    .header-acoes .logout { color: #e74c3c; }
+    .abas { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .aba { padding: 12px 24px; background: transparent; border: none; color: rgba(255,255,255,0.5); font-size: 0.9em; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.3s; font-family: 'Montserrat', sans-serif; }
+    .aba:hover { color: #fff; }
+    .aba.ativa { color: #f1c40f; border-bottom-color: #f1c40f; }
+    .aba-content { display: none; }
+    .aba-content.ativa { display: block; }
+    .controles { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 30px; background: rgba(255,255,255,0.03); border-radius: 16px; padding: 25px; border: 1px solid rgba(255,255,255,0.08); }
+    .controle-group { flex: 1; min-width: 200px; }
+    .controle-group label { display: block; font-size: 0.8em; letter-spacing: 1px; opacity: 0.7; margin-bottom: 8px; }
+    .controle-group select, .controle-group input[type="checkbox"] { margin-top: 5px; }
+    .controle-group select { width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; font-size: 0.9em; outline: none; }
+    .controle-group select:focus { border-color: #f1c40f; }
+    .controle-group.checkbox-group { display: flex; align-items: flex-end; gap: 10px; }
+    .controle-group.checkbox-group input[type="checkbox"] { width: 20px; height: 20px; accent-color: #f1c40f; }
+    .controle-group button { padding: 10px 20px; background: #f1c40f; color: #000; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85em; transition: background 0.3s; }
+    .controle-group button:hover { background: #d4ac0d; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .grid .photo { position: relative; overflow: hidden; border-radius: 10px; background: #1a1a1a; aspect-ratio: 1/1; }
+    .grid .photo img { width: 100%; height: 100%; object-fit: cover; }
+    .grid .photo-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 10px; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); display: flex; justify-content: space-between; align-items: flex-end; }
+    .grid .photo-overlay .info { font-size: 0.7em; opacity: 0.8; }
+    .grid .photo-overlay .delete-btn { background: rgba(231,76,60,0.8); border: none; color: #fff; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.75em; transition: background 0.3s; }
+    .grid .photo-overlay .delete-btn:hover { background: #e74c3c; }
+    .empty { text-align: center; padding: 60px; opacity: 0.5; font-size: 1.1em; }
+    .toast { position: fixed; bottom: 30px; right: 30px; background: rgba(46,204,113,0.95); color: #fff; padding: 16px 24px; border-radius: 12px; font-weight: 500; font-size: 0.9em; max-width: 350px; z-index: 5000; transform: translateY(100px); opacity: 0; transition: all 0.5s cubic-bezier(0.4,0,0.2,1); }
+    .toast.erro { background: rgba(231,76,60,0.95); }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast-info { position: fixed; bottom: 30px; right: 30px; background: rgba(241,196,15,0.9); color: #000; padding: 14px 20px; border-radius: 12px; font-weight: 500; font-size: 0.85em; max-width: 350px; z-index: 5000; transform: translateY(100px); opacity: 0; transition: all 0.5s cubic-bezier(0.4,0,0.2,1); }
+    .toast-info.show { transform: translateY(0); opacity: 1; }
+    .lightbox { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 3000; cursor: pointer; }
+    .lightbox.ativa { display: flex; }
+    .lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 8px; }
+    @media (max-width: 600px) { .admin-content { padding: 15px; } .grid { grid-template-columns: repeat(2, 1fr); } .controles { flex-direction: column; } }
+  </style>
+</head>
+<body>
+  <div class="login" id="telaLogin">
+    <div class="login-card">
+      <h2>🔐 Painel Admin</h2>
+      <input type="password" id="senhaInput" placeholder="Digite a senha" onkeydown="if(event.key==='Enter') entrar()">
+      <button onclick="entrar()">Entrar</button>
+      <div class="erro" id="erroLogin">Senha incorreta</div>
+    </div>
+  </div>
+
+  <div class="admin-content" id="adminContent">
+    <div class="header">
+      <h1>⚙️ Administração</h1>
+      <div class="header-acoes">
+        <a href="galeria.html" target="_blank">📺 Galeria</a>
+        <a href="index.html" target="_blank">📤 Upload</a>
+        <button onclick="exportarCSV()">📊 Exportar</button>
+        <button class="logout" onclick="sair()">🚪 Sair</button>
+      </div>
+    </div>
+
+    <div class="abas">
+      <button class="aba ativa" data-aba="controles" onclick="mudarAba('controles', this)">🎛️ Controles</button>
+      <button class="aba" data-aba="fotos" onclick="mudarAba('fotos', this)">📸 Fotos</button>
+    </div>
+
+    <div class="aba-content ativa" id="aba-controles">
+      <div class="controles">
+        <div class="controle-group">
+          <label>🎨 MODO DE EXIBIÇÃO</label>
+          <select id="modoSelect">
+            <option value="cover">Cover (padrão)</option>
+            <option value="contain">Contain</option>
+            <option value="blur">Blur (fundo desfocado)</option>
+            <option value="fill">Fill</option>
+          </select>
+          <button onclick="definirModo()" style="margin-top:10px;">Aplicar Modo</button>
+        </div>
+        <div class="controle-group checkbox-group">
+          <label>🖥️ FULLSCREEN AUTO</label>
+          <input type="checkbox" id="fullscreenCheck">
+          <button onclick="definirFullscreen()">Salvar</button>
+        </div>
+        <div class="controle-group">
+          <label>⏸️ PAUSAR GALERIA</label>
+          <button onclick="pausar()" id="btnPausa">Pausar</button>
+        </div>
+      </div>
+      <div id="statusMsg" style="text-align:center;font-size:0.85em;opacity:0.6;margin-top:-15px;"></div>
+    </div>
+
+    <div class="aba-content" id="aba-fotos">
+      <div id="statusMsgFotos" style="text-align:center;font-size:0.85em;opacity:0.6;margin-bottom:15px;">Carregando fotos...</div>
+      <div class="grid" id="gridFotos"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="toast-info" id="toastInfo"></div>
+  <div class="lightbox" id="lightbox" onclick="fecharLightbox()">
+    <img id="lightboxImg" src="" alt="">
+  </div>
+
+  <script>
+    if (typeof CONFIG === 'undefined') console.error('config.js não carregou!');
+    const cfg = typeof CONFIG !== 'undefined' ? CONFIG : {};
+    const URL_API = cfg.google ? cfg.google.urlScript : '';
+    const SENHA = cfg.admin ? cfg.admin.senha : 'cpw2026';
+    const MODOS = cfg.modosExibicao || ['cover', 'contain', 'blur', 'fill'];
+
+    function urlComCacheBust(url) { return url + '?_=' + Date.now(); }
+
+    function mostrarToast(mensagem, erro) {
+      const t = document.getElementById('toast');
+      t.textContent = mensagem; t.className = 'toast' + (erro ? ' erro' : '');
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 5000);
+    }
+    function mostrarToastInfo(mensagem) {
+      const t = document.getElementById('toastInfo');
+      t.textContent = mensagem; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 5000);
+    }
+
+    async function chamarAPI(dados) {
+      try {
+        const resposta = await fetch(URL_API, {
+          method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(dados)
+        });
+        return await resposta.json();
+      } catch (erro) { mostrarToast('Erro de conexão: ' + erro.message, true); return null; }
+    }
+
+    async function entrar() {
+      const senhaDigitada = document.getElementById('senhaInput').value;
+      if (senhaDigitada !== SENHA) {
+        document.getElementById('erroLogin').style.display = 'block';
+        setTimeout(() => document.getElementById('erroLogin').style.display = 'none', 3000);
+        return;
+      }
+      document.getElementById('telaLogin').style.display = 'none';
+      document.getElementById('adminContent').style.display = 'block';
+      carregarStatus();
+      carregarFotos();
+    }
+    function sair() { document.getElementById('telaLogin').style.display = 'flex'; document.getElementById('adminContent').style.display = 'none'; }
+
+    function mudarAba(aba, btn) {
+      document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
+      document.querySelectorAll('.aba-content').forEach(c => c.classList.remove('ativa'));
+      btn.classList.add('ativa');
+      document.getElementById('aba-' + aba).classList.add('ativa');
+    }
+
+    async function carregarStatus() {
+      const modoR = await chamarAPI({ acao: 'verificar_modo' });
+      if (modoR && modoR.sucesso && MODOS.includes(modoR.modo)) document.getElementById('modoSelect').value = modoR.modo;
+      const fsR = await chamarAPI({ acao: 'verificar_fullscreen' });
+      if (fsR && fsR.sucesso) document.getElementById('fullscreenCheck').checked = fsR.ativo;
+      const pR = await chamarAPI({ acao: 'verificar_pausa' });
+      if (pR && pR.sucesso) document.getElementById('btnPausa').textContent = pR.pausada ? 'Retomar' : 'Pausar';
+    }
+
+    async function definirModo() {
+      const modo = document.getElementById('modoSelect').value;
+      const resultado = await chamarAPI({ acao: 'definir_modo', modo, senha: SENHA });
+      if (resultado && resultado.sucesso) mostrarToast('Modo alterado para: ' + modo);
+      else mostrarToast('Erro ao alterar modo', true);
+    }
+    async function definirFullscreen() {
+      const ativo = document.getElementById('fullscreenCheck').checked;
+      const resultado = await chamarAPI({ acao: 'definir_fullscreen', ativo, senha: SENHA });
+      if (resultado && resultado.sucesso) mostrarToast('Fullscreen auto: ' + (ativo ? 'ligado' : 'desligado'));
+      else mostrarToast('Erro ao definir fullscreen', true);
+    }
+    async function pausar() {
+      const pausado = document.getElementById('btnPausa').textContent === 'Pausar';
+      const resultado = await chamarAPI({ acao: pausado ? 'pausar' : 'retomar', senha: SENHA });
+      if (resultado && resultado.sucesso) { document.getElementById('btnPausa').textContent = resultado.pausada ? 'Retomar' : 'Pausar'; mostrarToast(resultado.pausada ? 'Galeria pausada' : 'Galeria retomada'); }
+      else mostrarToast('Erro ao pausar/retomar', true);
+    }
+
+    async function carregarFotos() {
+      try {
+        const resposta = await fetch(urlComCacheBust(URL_API));
+        const fotos = await resposta.json();
+        if (!Array.isArray(fotos)) { document.getElementById('statusMsgFotos').textContent = 'Nenhuma foto encontrada'; return; }
+        document.getElementById('statusMsgFotos').textContent = fotos.length + ' foto(s) carregada(s)';
+        const grid = document.getElementById('gridFotos');
+        grid.innerHTML = '';
+        fotos.sort((a, b) => b.data - a.data).forEach(foto => {
+          const div = document.createElement('div'); div.className = 'photo';
+          div.innerHTML = '<img src="' + foto.url + '" loading="lazy" onclick="abrirLightbox(\'' + foto.url + '\')"><div class="photo-overlay"><span class="info">' + (foto.descricao ? foto.descricao.split(':')[0] : 'Convidado') + '</span><button class="delete-btn" onclick="deletarFoto(\'' + foto.id + '\')">🗑️</button></div>';
+          grid.appendChild(div);
+        });
+      } catch (erro) { document.getElementById('statusMsgFotos').textContent = 'Erro ao carregar fotos'; }
+    }
+
+    async function deletarFoto(id) {
+      if (!confirm('Tem certeza que deseja excluir esta foto?')) return;
+      const resultado = await chamarAPI({ acao: 'deletar', id, senha: SENHA });
+      if (resultado && resultado.sucesso) { mostrarToast('Foto excluída'); carregarFotos(); }
+      else mostrarToast('Erro ao excluir foto', true);
+    }
+
+    async function exportarCSV() {
+      const resultado = await chamarAPI({ acao: 'exportar', senha: SENHA });
+      if (resultado && resultado.sucesso && resultado.csv) {
+        const blob = new Blob(['\uFEFF' + resultado.csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'relatorio_fotos.csv'; link.click();
+        mostrarToast('Relatório exportado');
+      } else mostrarToast('Erro ao exportar', true);
+    }
+
+    let lightboxAberta = false;
+    function abrirLightbox(url) {
+      document.getElementById('lightboxImg').src = url;
+      document.getElementById('lightbox').classList.add('ativa');
+      lightboxAberta = true;
+    }
+    function fecharLightbox() { document.getElementById('lightbox').classList.remove('ativa'); lightboxAberta = false; }
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && lightboxAberta) fecharLightbox(); });
+  </script>
+</body>
+</html>

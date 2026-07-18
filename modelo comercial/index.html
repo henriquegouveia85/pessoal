@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Envie sua foto - <script>document.write(CONFIG ? CONFIG.evento.nome : 'Evento')</script></title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+  <script src="config.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #fff;
+    }
+    #canvasConfetes {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 999;
+    }
+    .container {
+      background: rgba(255,255,255,0.97);
+      border-radius: 24px;
+      padding: 35px 25px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+    }
+    .header-nomes {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2em;
+      color: #2c3e50;
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 5px;
+    }
+    .header-data {
+      font-family: 'Playfair Display', serif;
+      font-size: 1em;
+      color: #7f8c8d;
+      font-style: italic;
+      margin-bottom: 15px;
+    }
+    .header-mensagem {
+      font-size: 0.95em;
+      color: #555;
+      line-height: 1.5;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border-left: 4px solid #667eea;
+    }
+    .contador-fotos {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      font-size: 0.95em;
+      font-weight: 600;
+    }
+    .contador-fotos .numero { font-size: 1.4em; font-weight: 700; }
+    .contador-fotos.limite { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
+    .barra-progresso {
+      width: 100%; height: 6px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 3px; margin-top: 8px;
+      overflow: hidden;
+    }
+    .barra-preenchimento {
+      height: 100%; background: white;
+      transition: width 0.5s ease; border-radius: 3px;
+    }
+    .contador-total {
+      background: rgba(102, 126, 234, 0.12);
+      border: 1px dashed #667eea;
+      color: #667eea; padding: 10px;
+      border-radius: 10px; margin-bottom: 20px;
+      font-size: 0.85em; font-weight: 600;
+    }
+    .thumb-titulo {
+      font-size: 0.8em; color: #7f8c8d;
+      font-weight: 600; margin-top: 15px; margin-bottom: 5px;
+      text-align: left;
+    }
+    .thumb-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+      gap: 6px; margin-top: 12px; margin-bottom: 10px;
+    }
+    .thumb-grid .thumb-item {
+      aspect-ratio: 1; border-radius: 8px;
+      overflow: hidden; border: 2px solid #e0e0e0;
+      position: relative;
+    }
+    .thumb-grid .thumb-item img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .thumb-grid .thumb-item .thumb-num {
+      position: absolute; bottom: 2px; right: 4px;
+      background: rgba(0,0,0,0.6); color: white;
+      font-size: 0.6em; padding: 1px 5px;
+      border-radius: 4px; font-weight: 600;
+    }
+    input[type="text"], textarea {
+      width: 100%; padding: 14px; margin-bottom: 12px;
+      border-radius: 12px; border: 2px solid #e0e0e0;
+      font-size: 1em; outline: none; transition: border 0.3s;
+      background: white; color: #333;
+      font-family: 'Montserrat', sans-serif;
+    }
+    textarea { resize: none; min-height: 70px; }
+    input[type="text"]:focus, textarea:focus { border-color: #667eea; }
+    #fotoCamera, #fotoGaleria {
+      position: fixed; opacity: 0;
+      pointer-events: none; width: 1px; height: 1px; z-index: -1;
+    }
+    .btn-grupo { display: flex; gap: 10px; margin-bottom: 10px; }
+    .btn-camera, .btn-galeria {
+      flex: 1; padding: 16px; border-radius: 12px;
+      font-size: 0.9em; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; transition: all 0.3s;
+    }
+    .btn-camera {
+      border: none; background: #667eea; color: white;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    .btn-camera:hover { transform: translateY(-2px); }
+    .btn-camera:disabled { background: #bdc3c7; cursor: not-allowed; box-shadow: none; transform: none; }
+    .btn-galeria {
+      border: 2px solid #667eea; background: transparent; color: #667eea;
+    }
+    .btn-galeria:hover { background: rgba(102, 126, 234, 0.08); transform: translateY(-2px); }
+    .btn-galeria:disabled { border-color: #bdc3c7; color: #bdc3c7; cursor: not-allowed; transform: none; background: transparent; }
+    #preview {
+      width: 100%; max-height: 250px; border-radius: 12px;
+      margin: 10px 0; display: none; object-fit: cover;
+      border: 3px solid #ecf0f1; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .btn-enviar, .btn-enviar-outra {
+      width: 100%; padding: 16px; border-radius: 12px;
+      font-size: 1em; font-weight: 600; cursor: pointer;
+      display: none; align-items: center; justify-content: center;
+      gap: 10px; transition: all 0.3s;
+    }
+    .btn-enviar { border: none; background: #27ae60; color: white; box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4); }
+    .btn-enviar:hover { transform: translateY(-2px); }
+    .btn-enviar:disabled { background: #95a5a6; cursor: not-allowed; box-shadow: none; }
+    .btn-enviar-outra {
+      border: 2px solid #667eea; background: transparent; color: #667eea;
+      margin-top: 10px; padding: 12px;
+    }
+    .btn-enviar-outra:hover { background: rgba(102, 126, 234, 0.08); transform: translateY(-2px); }
+    #status {
+      margin-top: 15px; padding: 12px; border-radius: 12px;
+      font-weight: 600; display: none; font-size: 0.95em;
+    }
+    .sucesso { background: #d4edda; color: #155724; display: block !important; border: 2px solid #c3e6cb; }
+    .erro { background: #f8d7da; color: #721c24; display: block !important; border: 2px solid #f5c6cb; }
+    .carregando { background: #fff3cd; color: #856404; display: block !important; border: 2px solid #ffeaa7; }
+    .limite-atingido { background: #f8d7da; color: #721c24; display: block !important; border: 2px solid #f5c6cb; }
+    .offline-badge {
+      display: none; position: fixed; top: 15px; left: 50%;
+      transform: translateX(-50%); background: #e74c3c; color: white;
+      padding: 8px 20px; border-radius: 20px; font-weight: 700;
+      font-size: 0.85em; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+      z-index: 500; animation: pulseOffline 2s ease-in-out infinite;
+    }
+    .offline-badge.ativo { display: block; }
+    @keyframes pulseOffline { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+    .fila-badge {
+      display: none; background: #f39c12; color: white;
+      padding: 6px 14px; border-radius: 12px; font-size: 0.8em;
+      font-weight: 600; margin-top: 10px;
+    }
+    .fila-badge.ativo { display: inline-block; }
+    .hashtag {
+      margin-top: 20px; font-size: 0.9em; color: #667eea;
+      font-weight: 600; letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="offline-badge" id="offlineBadge">📡 Sem conexão — Fotos serão enviadas quando voltar</div>
+  <canvas id="canvasConfetes"></canvas>
+  <div class="container">
+    <div class="header-nomes" id="eventoNome">Maria Paula &amp; Wilson</div>
+    <div class="header-data" id="eventoData">15 de Julho de 2026</div>
+    <div class="header-mensagem">
+      Obrigado por fazer parte deste dia tão especial! 💍<br>
+      Compartilhe seus momentos conosco e veja todas as fotos no telão.
+    </div>
+    <div class="contador-total" id="contadorTotal">📸 <span id="totalEvento">0</span> fotos compartilhadas no evento</div>
+    <div class="contador-fotos" id="contadorFotos">
+      <div>Você já enviou <span class="numero" id="numFotos">0</span> de <span id="maxFotos">50</span> fotos</div>
+      <div class="barra-progresso"><div class="barra-preenchimento" id="barraProgresso" style="width:0%"></div></div>
+    </div>
+    <div class="thumb-titulo">📷 Minhas fotos enviadas</div>
+    <div class="thumb-grid" id="thumbGrid"></div>
+    <input type="text" id="nome" placeholder="Seu nome (opcional)">
+    <textarea id="mensagem" placeholder="Deixe uma mensagem para os noivos ❤️ (opcional)" maxlength="150"></textarea>
+    <input type="file" id="fotoCamera" accept="image/*" capture="environment">
+    <input type="file" id="fotoGaleria" accept="image/*">
+    <div class="btn-grupo">
+      <button class="btn-camera" id="btnCamera" onclick="document.getElementById('fotoCamera').click()"><span>📸</span><span>Tirar Foto</span></button>
+      <button class="btn-galeria" id="btnGaleria" onclick="document.getElementById('fotoGaleria').click()"><span>🖼️</span><span>Galeria</span></button>
+    </div>
+    <img id="preview">
+    <button id="enviar" class="btn-enviar" onclick="enviarFoto()"><span>✅</span><span>Enviar para a Galeria</span></button>
+    <button id="enviarOutra" class="btn-enviar-outra" onclick="resetarFormulario()"><span>📸</span><span>Enviar outra foto</span></button>
+    <span class="fila-badge" id="filaBadge"></span>
+    <div id="status"></div>
+    <div class="hashtag" id="eventoHashtag">#MariaPaulaEWilson</div>
+  </div>
+  <script>
+    const URL_SCRIPT = (typeof CONFIG !== 'undefined') ? CONFIG.google.urlScript : '';
+    const LIMITE_FOTOS = (typeof CONFIG !== 'undefined') ? CONFIG.limites.fotosPorPessoa : 50;
+    if (typeof CONFIG !== 'undefined') {
+      document.getElementById('eventoNome').textContent = CONFIG.evento.nome;
+      document.getElementById('eventoData').textContent = CONFIG.evento.data;
+      document.getElementById('eventoHashtag').textContent = CONFIG.evento.hashtag;
+      document.getElementById('maxFotos').textContent = CONFIG.limites.fotosPorPessoa;
+    }
+
+    function urlComCacheBust(url) { return url + '?_=' + Date.now(); }
+    let fotoBase64 = null;
+    let fotoThumbnail = null;
+    let filaOffline = JSON.parse(localStorage.getItem('filaOffline') || '[]');
+
+    function getChaveUnica() {
+      const nome = document.getElementById('nome').value.trim() || 'anonimo';
+      return 'casamento_fotos_' + nome.toLowerCase().replace(/\s+/g, '_') + '_' + navigator.userAgent.slice(-20);
+    }
+    function getFotosEnviadas() { return parseInt(localStorage.getItem(getChaveUnica()) || '0'); }
+    function incrementarFotos() {
+      const atual = parseInt(localStorage.getItem(getChaveUnica()) || '0');
+      localStorage.setItem(getChaveUnica(), (atual + 1).toString());
+      atualizarContador();
+    }
+    function atualizarContador() {
+      const enviadas = getFotosEnviadas();
+      document.getElementById('numFotos').textContent = enviadas;
+      document.getElementById('barraProgresso').style.width = ((enviadas / LIMITE_FOTOS) * 100) + '%';
+      const contador = document.getElementById('contadorFotos');
+      const btnCamera = document.getElementById('btnCamera');
+      const btnGaleria = document.getElementById('btnGaleria');
+      if (enviadas >= LIMITE_FOTOS) {
+        contador.classList.add('limite');
+        btnCamera.disabled = true; btnGaleria.disabled = true;
+        btnCamera.innerHTML = '<span>🚫</span><span>Limite atingido</span>';
+        btnGaleria.innerHTML = '<span>🚫</span><span>Limite atingido</span>';
+      } else {
+        contador.classList.remove('limite');
+        btnCamera.disabled = false; btnGaleria.disabled = false;
+        btnCamera.innerHTML = '<span>📸</span><span>Tirar Foto</span>';
+        btnGaleria.innerHTML = '<span>🖼️</span><span>Galeria</span>';
+      }
+    }
+    document.getElementById('nome').addEventListener('input', atualizarContador);
+    atualizarContador();
+
+    function getChaveThumbs() { return getChaveUnica() + '_thumbs'; }
+    function salvarThumbnail(base64) {
+      const chave = getChaveThumbs();
+      const thumbs = JSON.parse(localStorage.getItem(chave) || '[]');
+      thumbs.push(base64);
+      if (thumbs.length > LIMITE_FOTOS) thumbs.shift();
+      localStorage.setItem(chave, JSON.stringify(thumbs));
+    }
+    function carregarThumbnails() {
+      const chave = getChaveThumbs();
+      const thumbs = JSON.parse(localStorage.getItem(chave) || '[]');
+      const grid = document.getElementById('thumbGrid');
+      if (thumbs.length === 0) { grid.innerHTML = ''; return; }
+      grid.innerHTML = thumbs.map((thumb, i) =>
+        '<div class="thumb-item"><img src="' + thumb + '"><div class="thumb-num">#' + (i + 1) + '</div></div>'
+      ).join('');
+    }
+    document.getElementById('nome').addEventListener('input', carregarThumbnails);
+    carregarThumbnails();
+
+    function handleFileInput(inputId) {
+      document.getElementById(inputId).addEventListener('change', function(e) {
+        const arquivo = e.target.files[0];
+        if (!arquivo) return;
+        if (getFotosEnviadas() >= LIMITE_FOTOS) {
+          const status = document.getElementById('status');
+          status.className = 'limite-atingido';
+          status.textContent = '🚫 Você já atingiu o limite de ' + LIMITE_FOTOS + ' fotos. Obrigado pela participação!';
+          return;
+        }
+        const status = document.getElementById('status');
+        status.className = 'carregando';
+        status.textContent = '⏳ Processando imagem...';
+        status.style.display = 'block';
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const maxSize = 1200;
+            let width = img.width, height = img.height;
+            if (width > height && width > maxSize) { height = (height * maxSize) / width; width = maxSize; }
+            else if (height > maxSize) { width = (width * maxSize) / height; height = maxSize; }
+            canvas.width = width; canvas.height = height;
+            canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+            fotoBase64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+            document.getElementById('preview').src = 'data:image/jpeg;base64,' + fotoBase64;
+            document.getElementById('preview').style.display = 'block';
+            document.getElementById('enviar').style.display = 'flex';
+            status.style.display = 'none';
+            const thumbCanvas = document.createElement('canvas');
+            const thumbSize = 80;
+            let tw = img.width, th = img.height;
+            if (tw > th) { th = (th / tw) * thumbSize; tw = thumbSize; }
+            else { tw = (tw / th) * thumbSize; th = thumbSize; }
+            thumbCanvas.width = tw; thumbCanvas.height = th;
+            thumbCanvas.getContext('2d').drawImage(img, 0, 0, tw, th);
+            fotoThumbnail = thumbCanvas.toDataURL('image/jpeg', 0.6);
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(arquivo);
+      });
+    }
+    handleFileInput('fotoCamera');
+    handleFileInput('fotoGaleria');
+
+    function resetarFormulario() {
+      document.getElementById('fotoCamera').value = '';
+      document.getElementById('fotoGaleria').value = '';
+      document.getElementById('preview').style.display = 'none';
+      document.getElementById('mensagem').value = '';
+      document.getElementById('status').style.display = 'none';
+      document.getElementById('status').className = '';
+      document.getElementById('enviar').style.display = 'none';
+      document.getElementById('enviarOutra').style.display = 'none';
+      fotoBase64 = null;
+      fotoThumbnail = null;
+      const botao = document.getElementById('enviar');
+      botao.disabled = false;
+      botao.innerHTML = '<span>✅</span><span>Enviar para a Galeria</span>';
+    }
+
+    async function processarFila() {
+      if (!navigator.onLine || filaOffline.length === 0) return;
+      document.getElementById('filaBadge').textContent = '⏳ Enviando fotos pendentes (' + filaOffline.length + ')...';
+      const item = filaOffline[0];
+      try {
+        const resposta = await fetch(URL_SCRIPT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ image: item.image, nome: item.nome, mensagem: item.mensagem })
+        });
+        const resultado = await resposta.json();
+        if (resultado.sucesso) {
+          filaOffline.shift();
+          localStorage.setItem('filaOffline', JSON.stringify(filaOffline));
+          incrementarFotos();
+          if (filaOffline.length > 0) setTimeout(processarFila, 500);
+          else document.getElementById('filaBadge').classList.remove('ativo');
+        }
+      } catch (erro) { setTimeout(processarFila, 5000); }
+    }
+
+    window.addEventListener('online', function() {
+      document.getElementById('offlineBadge').classList.remove('ativo');
+      if (filaOffline.length > 0) processarFila();
+    });
+    window.addEventListener('offline', function() { document.getElementById('offlineBadge').classList.add('ativo'); });
+    if (!navigator.onLine) document.getElementById('offlineBadge').classList.add('ativo');
+    if (filaOffline.length > 0) {
+      document.getElementById('filaBadge').classList.add('ativo');
+      document.getElementById('filaBadge').textContent = '📤 ' + filaOffline.length + ' foto(s) aguardando conexão';
+      processarFila();
+    }
+
+    async function enviarFoto() {
+      if (getFotosEnviadas() >= LIMITE_FOTOS) {
+        const status = document.getElementById('status');
+        status.className = 'limite-atingido';
+        status.textContent = '🚫 Você já atingiu o limite de ' + LIMITE_FOTOS + ' fotos.';
+        return;
+      }
+      const nome = document.getElementById('nome').value.trim() || 'Convidado';
+      const mensagem = document.getElementById('mensagem').value.trim() || '';
+      const status = document.getElementById('status');
+      const botao = document.getElementById('enviar');
+      botao.disabled = true;
+      botao.innerHTML = '<span>⏳</span><span>Enviando...</span>';
+      status.className = 'carregando';
+      status.textContent = 'Enviando para a nuvem...';
+      status.style.display = 'block';
+
+      if (!navigator.onLine) {
+        filaOffline.push({ image: fotoBase64, nome: nome, mensagem: mensagem });
+        localStorage.setItem('filaOffline', JSON.stringify(filaOffline));
+        if (fotoThumbnail) salvarThumbnail(fotoThumbnail);
+        carregarThumbnails();
+        status.className = 'sucesso';
+        status.textContent = '📤 Foto salva! Será enviada quando a conexão voltar.';
+        document.getElementById('filaBadge').classList.add('ativo');
+        document.getElementById('filaBadge').textContent = '📤 ' + filaOffline.length + ' foto(s) aguardando';
+        botao.style.display = 'none';
+        document.getElementById('enviarOutra').style.display = 'flex';
+        return;
+      }
+
+      try {
+        const resposta = await fetch(URL_SCRIPT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ image: fotoBase64, nome: nome, mensagem: mensagem })
+        });
+        const resultado = await resposta.json();
+        if (resultado.sucesso) {
+          incrementarFotos();
+          if (fotoThumbnail) salvarThumbnail(fotoThumbnail);
+          carregarThumbnails();
+          status.className = 'sucesso';
+          const restantes = LIMITE_FOTOS - getFotosEnviadas();
+          status.textContent = '🎉 Foto enviada! Você pode enviar mais ' + restantes + ' fotos.';
+          botao.style.display = 'none';
+          lancarConfetes();
+          document.getElementById('enviarOutra').style.display = 'flex';
+          carregarTotalEvento();
+        } else {
+          status.className = 'erro';
+          status.textContent = '❌ Erro: ' + (resultado.erro || 'Erro desconhecido');
+          botao.disabled = false;
+          botao.innerHTML = '<span>✅</span><span>Tentar Novamente</span>';
+        }
+      } catch (erro) {
+        status.className = 'erro';
+        status.textContent = '❌ Erro na conexão: ' + erro.message;
+        botao.disabled = false;
+        botao.innerHTML = '<span>✅</span><span>Tentar Novamente</span>';
+      }
+    }
+
+    async function carregarTotalEvento() {
+      try {
+        const resposta = await fetch(urlComCacheBust(URL_SCRIPT));
+        const fotos = await resposta.json();
+        if (Array.isArray(fotos)) document.getElementById('totalEvento').textContent = fotos.length;
+      } catch (erro) {}
+    }
+    carregarTotalEvento();
+    setInterval(carregarTotalEvento, 15000);
+
+    const canvas = document.getElementById('canvasConfetes');
+    const ctx = canvas.getContext('2d');
+    let confetes = [];
+    function redimensionarCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    redimensionarCanvas();
+    window.addEventListener('resize', redimensionarCanvas);
+    function criarConfete() {
+      const cores = ['#f1c40f', '#e74c3c', '#2ecc71', '#3498db', '#9b59b6', '#ff69b4', '#667eea', '#e67e22'];
+      return { x: Math.random() * canvas.width, y: -20, tamanho: 6 + Math.random() * 10, velocidadeY: 1.5 + Math.random() * 3, velocidadeX: (Math.random() - 0.5) * 3, rotacao: Math.random() * Math.PI * 2, velocidadeRotacao: (Math.random() - 0.5) * 0.2, opacidade: 0.8 + Math.random() * 0.2, cor: cores[Math.floor(Math.random() * cores.length)], formato: Math.random() > 0.5 ? 'rect' : 'circle' };
+    }
+    function desenharConfete(c) {
+      ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.rotacao); ctx.globalAlpha = c.opacidade; ctx.fillStyle = c.cor;
+      if (c.formato === 'rect') ctx.fillRect(-c.tamanho / 2, -c.tamanho / 4, c.tamanho, c.tamanho / 2);
+      else { ctx.beginPath(); ctx.arc(0, 0, c.tamanho / 2, 0, Math.PI * 2); ctx.fill(); }
+      ctx.restore();
+    }
+    function animarConfetes() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      confetes = confetes.filter(c => c.y < canvas.height + 50);
+      confetes.forEach(c => { c.y += c.velocidadeY; c.x += c.velocidadeX; c.rotacao += c.velocidadeRotacao; desenharConfete(c); });
+      requestAnimationFrame(animarConfetes);
+    }
+    animarConfetes();
+    function lancarConfetes() { for (let i = 0; i < 50; i++) { setTimeout(() => confetes.push(criarConfete()), i * 30); } }
+  </script>
+</body>
+</html>

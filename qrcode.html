@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>QR Code - Maria Paula & Wilson</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Montserrat', sans-serif; background: #f5f5f5; padding: 20px; }
+    .controles {
+      max-width: 800px; margin: 0 auto 30px;
+      background: white; padding: 25px;
+      border-radius: 12px;
+    }
+    .controles h2 {
+      font-family: 'Playfair Display', serif;
+      margin-bottom: 20px; color: #2c3e50;
+    }
+    .controles label {
+      display: block; margin-bottom: 5px;
+      font-weight: 600; color: #555;
+    }
+    .controles input, .controles textarea {
+      width: 100%; padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px; margin-bottom: 15px;
+    }
+    .controles button {
+      padding: 14px 28px; background: #667eea;
+      color: white; border: none;
+      border-radius: 8px; cursor: pointer;
+      font-weight: 600;
+    }
+    .seletor-estilo { display: flex; gap: 10px; margin-bottom: 15px; }
+    .estilo-opcao {
+      flex: 1; padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px; text-align: center;
+      cursor: pointer; font-weight: 600;
+    }
+    .estilo-opcao.selecionado {
+      border-color: #667eea;
+      background: #667eea; color: white;
+    }
+    .folha-impressao {
+      width: 210mm; min-height: 297mm;
+      margin: 0 auto; background: white;
+      padding: 20mm; display: flex;
+      flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+    }
+    .ornamento-topo, .ornamento-base {
+      width: 60%; height: 2px;
+      background: linear-gradient(to right, transparent, #667eea, transparent);
+      margin: 15px 0;
+    }
+    .nomes {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.5em; color: #2c3e50;
+      font-weight: 700; letter-spacing: 3px;
+    }
+    .data {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3em; color: #7f8c8d;
+      font-style: italic; margin-bottom: 30px;
+    }
+    .qr-container {
+      padding: 20px; border: 3px solid #667eea;
+      border-radius: 20px; margin: 20px 0;
+    }
+    #qrcode img, #qrcode canvas { width: 280px !important; height: 280px !important; }
+    .instrucao {
+      font-size: 1.3em; color: #2c3e50;
+      margin-top: 25px; font-weight: 600;
+    }
+    .hashtag {
+      margin-top: 30px; font-size: 1.2em;
+      color: #667eea; font-weight: 600;
+    }
+    @media print {
+      body { background: white; padding: 0; }
+      .controles { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="controles">
+    <h2>🎨 Personalize seu QR Code</h2>
+    <label>URL DO SITE</label>
+    <input type="text" id="inputUrl">
+    <label>NOMES DOS NOIVOS</label>
+    <input type="text" id="inputNomes" value="Maria Paula & Wilson">
+    <label>DATA</label>
+    <input type="text" id="inputData" value="15 de Julho de 2026">
+    <label>HASHTAG</label>
+    <input type="text" id="inputHashtag" value="#MariaPaulaEWilson">
+    <button onclick="gerarQRCode()">🔄 Gerar QR Code</button>
+    <button onclick="window.print()" style="background:#27ae60; margin-left:10px;">🖨️ Imprimir</button>
+  </div>
+  <div class="folha-impressao">
+    <div class="ornamento-topo"></div>
+    <div class="nomes" id="nomesExibidos">Maria Paula &amp; Wilson</div>
+    <div class="data" id="dataExibida">15 de Julho de 2026</div>
+    <div class="qr-container"><div id="qrcode"></div></div>
+    <div class="instrucao">📸 Escaneie e compartilhe seu momento</div>
+    <div class="hashtag" id="hashtagExibida">#MariaPaulaEWilson</div>
+    <div class="ornamento-base"></div>
+  </div>
+  <script>
+    const URL_PADRAO = 'https://SEU-SITE.netlify.app'; // ALTERE!
+    function gerarQRCode() {
+      const url = document.getElementById('inputUrl').value.trim() || URL_PADRAO;
+      const nomes = document.getElementById('inputNomes').value.trim();
+      const data = document.getElementById('inputData').value.trim();
+      const hashtag = document.getElementById('inputHashtag').value.trim();
+      document.getElementById('nomesExibidos').innerHTML = nomes.replace(/&/g, '&amp;');
+      document.getElementById('dataExibida').textContent = data;
+      document.getElementById('hashtagExibida').textContent = hashtag;
+      const container = document.getElementById('qrcode');
+      container.innerHTML = '';
+      QRCode.toCanvas(url, {
+        width: 280, margin: 2,
+        color: { dark: '#2c3e50', light: '#ffffff' }
+      }, function(error, canvas) {
+        if (error) console.error(error);
+        else container.appendChild(canvas);
+      });
+    }
+    window.onload = function() {
+      document.getElementById('inputUrl').value = URL_PADRAO;
+      gerarQRCode();
+    };
+  </script>
+</body>
+</html>
