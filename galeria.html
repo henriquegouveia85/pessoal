@@ -640,6 +640,11 @@
       modoSlideshow = false;
       destaque.classList.remove('modo-slideshow', 'fullscreen');
       if (slideshowInterval) { clearInterval(slideshowInterval); slideshowInterval = null; }
+      if (todasFotos.length > 0) {
+        const ultima = todasFotos[0];
+        fotoAtualDestaque = null;
+        atualizarDestaque(ultima, false);
+      }
     }
 
     function pararSlideshowTimer() {
@@ -700,7 +705,8 @@
     }
 
     function atualizarDestaque(foto, ehNova) {
-      if (fotoAtualDestaque === foto.id && !ehNova && !modoSlideshow) return;
+      if (modoSlideshow) return;
+      if (fotoAtualDestaque === foto.id && !ehNova) return;
 
       if (timeoutFullscreen) { clearTimeout(timeoutFullscreen); timeoutFullscreen = null; }
       destaque.classList.remove('fullscreen');
@@ -826,9 +832,9 @@
         const fotoMaisNova = fotos[0];
         const ehFotoNova = fotoAtualDestaque !== fotoMaisNova.id;
         
-        if (ehFotoNova) iniciarSlideshowTimer();
+        if (ehFotoNova && !modoSlideshow) iniciarSlideshowTimer();
         
-        atualizarDestaque(fotoMaisNova, ehFotoNova);
+        if (!modoSlideshow) atualizarDestaque(fotoMaisNova, ehFotoNova);
         atualizarMural(fotos);
         atualizarEstatisticas(fotos);
         
