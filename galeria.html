@@ -115,11 +115,30 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
+      z-index: 2;
     }
-    .destaque-info {
+    .destaque-msg {
+      max-width: 70%;
+    }
+    .destaque-nome {
+      font-size: 1.4em;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+      margin-bottom: 4px;
+    }
+    .destaque-mensagem {
       font-size: 1.1em;
       font-weight: 300;
-      letter-spacing: 1px;
+      font-style: italic;
+      opacity: 0.95;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      line-height: 1.4;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
     }
     .destaque-badge {
       background: #f1c40f;
@@ -129,6 +148,7 @@
       font-size: 0.9em;
       font-weight: bold;
       animation: pulse 1.5s infinite;
+      flex-shrink: 0;
     }
     @keyframes pulse {
       0%, 100% { transform: scale(1); opacity: 1; }
@@ -194,6 +214,32 @@
       transition: transform 0.5s;
     }
     .mural .photo:hover img { transform: scale(1.08); }
+    .mural .photo:hover .photo-overlay { opacity: 1; }
+    .photo-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 15px 12px 10px;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
+    .photo-nome {
+      font-size: 0.85em;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .photo-msg {
+      font-size: 0.75em;
+      font-style: italic;
+      opacity: 0.85;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     
     .mural .photo.entrada {
       animation: entrarMural 0.8s ease-out;
@@ -606,11 +652,19 @@
 
       const img = destaque.querySelector('.destaque-img');
       const bg = destaque.querySelector('.destaque-bg');
+      const nomeEl = destaque.querySelector('.destaque-nome');
+      const msgEl = destaque.querySelector('.destaque-mensagem');
+      const info = parseDescricao(foto);
       if (img) {
         img.classList.add('fade-out');
         setTimeout(() => {
           img.src = foto.url;
           if (bg) bg.style.backgroundImage = 'url(' + foto.url + ')';
+          if (nomeEl) nomeEl.textContent = info.nome;
+          if (msgEl) {
+            if (info.mensagem) { msgEl.textContent = '"' + info.mensagem + '"'; msgEl.style.display = ''; }
+            else { msgEl.style.display = 'none'; }
+          }
           img.classList.remove('fade-out');
         }, 400);
       }
@@ -624,6 +678,20 @@
 
     let timeoutFullscreen = null;
 
+    function parseDescricao(foto) {
+      let nome = 'Convidado', mensagem = '';
+      if (foto.descricao) {
+        const i = foto.descricao.indexOf(': ');
+        if (i > 0) {
+          nome = foto.descricao.substring(0, i);
+          mensagem = foto.descricao.substring(i + 2);
+        } else {
+          nome = foto.descricao;
+        }
+      }
+      return { nome, mensagem };
+    }
+
     function atualizarDestaque(foto, ehNova) {
       if (fotoAtualDestaque === foto.id && !ehNova && !modoSlideshow) return;
 
@@ -636,6 +704,7 @@
       }
 
       fotoAtualDestaque = foto.id;
+      const info = parseDescricao(foto);
 
       if (!modoSlideshow) {
         destaque.innerHTML = '';
@@ -651,7 +720,13 @@
 
         const overlay = document.createElement('div');
         overlay.className = 'destaque-overlay';
-        overlay.innerHTML = `<div class="destaque-badge">✨ Nova!</div>`;
+        overlay.innerHTML = `
+          <div class="destaque-msg">
+            <div class="destaque-nome">${info.nome}</div>
+            ${info.mensagem ? '<div class="destaque-mensagem">"'+info.mensagem+'"</div>' : ''}
+          </div>
+          ${ehNova ? '<div class="destaque-badge">✨ Nova!</div>' : ''}
+        `;
 
         destaque.appendChild(bg);
         destaque.appendChild(img);
@@ -690,9 +765,14 @@
         
         mural.innerHTML = fotosMural.map(foto => {
           const ehNova = fotosNovas.find(n => n.id === foto.id);
+          const info = parseDescricao(foto);
           return `
             <div class="photo ${ehNova ? 'entrada' : ''}">
               <img src="${foto.url}" alt="Foto" loading="lazy">
+              <div class="photo-overlay">
+                <div class="photo-nome">${info.nome}</div>
+                ${info.mensagem ? '<div class="photo-msg">"'+info.mensagem+'"</div>' : ''}
+              </div>
             </div>
           `;
         }).join('');
