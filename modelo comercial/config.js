@@ -1,7 +1,7 @@
 var CONFIG = {
   evento: {
     nome: 'Maria Paula & Wilson',
-    data: '15 de Julho de 2026',
+    data: '18 de Setembro de 2026',
     hashtag: '#MariaPaulaEWilson',
   },
   google: {
