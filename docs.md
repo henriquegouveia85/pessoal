@@ -45,6 +45,10 @@ O deploy é automático via GitHub Actions. Ao fazer push na branch `main`:
 
 > ⚠️ O arquivo `Codigo.gs` (Google Apps Script) é atualizado automaticamente via GitHub Actions usando o **clasp** (CLI do Google Apps Script).
 
+## README
+
+O arquivo `README.md` na raiz do projeto é a página inicial do repositório no GitHub. Contém links, instruções de uso e setup local.
+
 ## Licença
 
 Este projeto está licenciado sob a **GNU General Public License v2**.
