@@ -1,13 +1,30 @@
-name: Deploy to Netlify
+name: Deploy
 on:
   push:
     branches: [main]
 jobs:
-  deploy:
+  netlify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy to Netlify
+      - name: Deploy site to Netlify
         env:
           NETLIFY_AUTH_TOKEN: nfp_c5Y19mRf8TMHZB8wyW3D5qDJCCKVV6a87007
         run: npx netlify-cli deploy --prod --dir=. --site 270bde21-56c9-4ee9-bf34-02e178dfb5fc
+  apps-script:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install clasp
+        run: npm i -g @google/clasp
+      - name: Restore clasp credentials
+        run: echo '${{ secrets.CLASPRC_JSON }}' > ~/.clasprc.json
+      - name: Push to Apps Script
+        run: npx @google/clasp push --force
+      - name: Version and redeploy
+        run: |
+          VERSION=$(npx @google/clasp version "deploy: ${{ github.sha }}" 2>&1 | grep -oP 'Created version \K\d+')
+          npx @google/clasp redeploy AKfycbwVGX4sNDlau179tcFH3sGHnh3TBMTPpuBajcd4HMgny7GsODOQTKR43YXikkKn2yBwmg -V $VERSION -d "auto: ${{ github.sha }}"
