@@ -623,12 +623,15 @@
     }
 
     function iniciarSlideshow() {
-      if (modoSlideshow || slideshowFotos.length < 2) return;
+      slideshowFotos = todasFotos.filter(f => f.id !== fotoAtualDestaque);
+      if (fotoAtualDestaque) slideshowFotos.unshift(todasFotos.find(f => f.id === fotoAtualDestaque) || slideshowFotos[0]);
+      if (slideshowFotos.length < 1) return;
       modoSlideshow = true;
       destaque.classList.add('modo-slideshow', 'fullscreen');
       pararSlideshowTimer();
       slideshowIdx = 0;
       mostrarFotoSlideshow();
+      if (slideshowInterval) clearInterval(slideshowInterval);
       slideshowInterval = setInterval(mostrarFotoSlideshow, 5000);
     }
 
@@ -920,10 +923,7 @@
         ciclarModo();
       } else if (e.key === 's' || e.key === 'S') {
         if (modoSlideshow) pararSlideshow();
-        else {
-          slideshowFotos = todasFotos || slideshowFotos;
-          iniciarSlideshow();
-        }
+        else iniciarSlideshow();
       } else if (e.key === 'Escape') {
         fecharAgradecimento();
         if (modoSlideshow) pararSlideshow();
