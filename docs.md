@@ -41,7 +41,7 @@ O deploy é automático via GitHub Actions. Ao fazer push na branch `main`:
 
 1. O GitHub Action é disparado
 2. O Netlify CLI faz o deploy dos arquivos estáticos
-3. O site é atualizado em https://chic-banoffee-aff099.netlify.app
+3. O site é atualizado automaticamente
 
 > ⚠️ O arquivo `Codigo.gs` (Google Apps Script) é atualizado automaticamente via GitHub Actions usando o **clasp** (CLI do Google Apps Script).
 

@@ -4,15 +4,6 @@
 
 Sistema interativo onde os convidados enviam fotos pelo celular e elas aparecem em tempo real no telão da festa.
 
-## 🚀 Acessar
-
-| Página | Link |
-|--------|------|
-| Upload (convidados) | https://chic-banoffee-aff099.netlify.app |
-| Telão ao vivo | https://chic-banoffee-aff099.netlify.app/galeria |
-| Painel admin | https://chic-banoffee-aff099.netlify.app/admin |
-| QR Code | https://chic-banoffee-aff099.netlify.app/qrcode |
-
 ## ✨ Funcionalidades
 
 - **Upload** por câmera ou galeria direto do celular (limite de 50 fotos por convidado)

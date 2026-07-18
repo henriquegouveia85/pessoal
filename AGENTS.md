@@ -12,7 +12,7 @@
    - O GitHub Action (`.github/workflows/deploy.yml`) dispara
    - O Netlify CLI faz o deploy dos arquivos estáticos (HTML/CSS/JS)
    - O clasp faz o push do `Codigo.gs` e publica no Google Apps Script
-   - O site é atualizado em: https://chic-banoffee-aff099.netlify.app
+    - O site é atualizado automaticamente
 
 > ⚠️ Toda alteração deve atualizar o `docs.md` com as explicações do que foi modificado.
 
